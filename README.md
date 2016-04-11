@@ -113,7 +113,7 @@ Initial release
 
 ## License
 
-MeeusSunMoon is freely distributable under the terms of the [MIT license](https://github.com/jan-r-g/MeeusSunMoon/blob/master/LICENSE).
+MeeusSunMoon is freely distributable under the terms of the [MIT license](LICENSE).
 
 [license-image]: http://img.shields.io/badge/license-MIT-blue.svg
 [license-url]: LICENSE
