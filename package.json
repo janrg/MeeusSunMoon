@@ -1,0 +1,54 @@
+{
+  "name": "meeussunmoon",
+  "version": "2.0.0",
+  "description": "Accurately calculate sunrise, sunset, and moon phases.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "moment": "^2.21.0",
+    "moment-timezone": "^0.5.14"
+  },
+  "devDependencies": {
+    "babel-core": "6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-syntax-dynamic-import": "6.18.0",
+    "babel-preset-env": "^1.6.1",
+    "node-qunit": "^1.0.0",
+    "rollup": "0.57.1",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-re": "^1.0.6",
+    "rollup-plugin-uglify": "^3.0.0",
+    "uglify-es": "^3.3.9"
+  },
+  "scripts": {
+    "rollup": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janrg/MeeusSunMoon.git"
+  },
+  "keywords": [
+    "sunrise",
+    "sunset",
+    "solar",
+    "noon",
+    "moon",
+    "phases",
+    "astronomical",
+    "calculations"
+  ],
+  "author": "Jan Greis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/janrg/MeeusSunMoon/issues"
+  },
+  "homepage": "https://github.com/janrg/MeeusSunMoon#readme"
+}

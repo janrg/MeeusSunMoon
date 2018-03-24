@@ -6021,3 +6021,6 @@ var moonPhases = {
                 "2016-11-21 08:33",
                 "2016-12-21 01:56"],
 };
+
+var locations = [honolulu, vancouver, miami, quito, ushuaia, montevideo, nyalesund, berlin, capetown, nairobi, baghdad, shanghai, jakarta, mcmurdo, auckland, anadyr];
+export { locations, moonPhases };
