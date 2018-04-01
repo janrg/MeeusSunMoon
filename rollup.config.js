@@ -1,19 +1,31 @@
 import babel from 'rollup-plugin-babel';
 import uglify from 'rollup-plugin-uglify';
 
-function rollupConfig(minify, format) {
-  const copyrightNotice = '/**\n * @license MeeusSunMoon v2.0.0\n * (c) 2018 Jan Greis\n * licensed under MIT\n */\n';
+const copyrightNotice = `/**
+ * @license MeeusSunMoon v2.0.0\n * (c) 2018 Jan Greis
+ * licensed under MIT
+ */
+`;
+
+/**
+* @param {boolean} minify Whether to minify output
+* @param {'umd'|'es'} format Rollup output format
+* @returns {object} Individual Rollup config object
+*/
+function rollupConfig (minify, format) {
   const config = {
     input: 'src/index.js',
     output: {
+      banner: copyrightNotice,
+      file: `dist/meeussunmoon${
+        format === 'es' ? '-es' : ''
+      }${minify ? '.min' : ''}.js`,
       format,
-      file: `dist/meeussunmoon${format === 'es' ? '-es' : ''}${minify ? '.min' : ''}.js`,
-      name: 'MeeusSunMoon',
-      banner: copyrightNotice
+      name: 'MeeusSunMoon'
     },
-    plugins: [],
+    plugins: []
   };
-  if (format == 'umd') {
+  if (format === 'umd') {
     config.plugins.push(babel());
   }
   if (minify) {
@@ -21,11 +33,21 @@ function rollupConfig(minify, format) {
     config.output.sourcemap = true;
   }
   return config;
-};
+}
 
 export default [
   rollupConfig(false, 'umd'),
   rollupConfig(true, 'umd'),
   rollupConfig(false, 'es'),
-  rollupConfig(true, 'es')
+  rollupConfig(true, 'es'),
+  {
+    input: 'test/tests.js',
+    output: {
+      banner: copyrightNotice,
+      file: `test/tests-compiled.js`,
+      format: 'umd',
+      name: 'MeeusSunMoonTests'
+    },
+    plugins: [babel()]
+  }
 ];

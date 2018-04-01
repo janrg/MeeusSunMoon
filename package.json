@@ -2,34 +2,43 @@
   "name": "meeussunmoon",
   "version": "2.0.0",
   "description": "Accurately calculate sunrise, sunset, and moon phases.",
-  "main": "index.js",
+  "main": "dist/meeussunmoon.min.js",
+  "module": "src/index.js",
   "directories": {
-    "lib": "lib",
     "test": "test"
   },
+  "scripts": {
+    "eslint": "eslint .",
+    "rollup": "rollup -c",
+    "node-qunit": "./node_modules/node-qunit/bin/cli.js --timeout 10000 -c dist/meeussunmoon.js -t test/tests-compiled.js -d moment:node_modules/moment/moment.js node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
+    "node-test": "npm run eslint && npm run rollup && npm run node-qunit",
+    "test": "npm run node-test"
+  },
   "dependencies": {
-    "babel-cli": "^6.26.0",
     "moment": "^2.21.0",
     "moment-timezone": "^0.5.14"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-core": "6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-syntax-dynamic-import": "6.18.0",
     "babel-preset-env": "^1.6.1",
+    "eslint": "4.19.1",
+    "eslint-config-standard": "11.0.0",
+    "eslint-plugin-import": "2.9.0",
+    "eslint-plugin-node": "6.0.1",
+    "eslint-plugin-promise": "3.7.0",
+    "eslint-plugin-standard": "3.0.1",
     "node-qunit": "^1.0.0",
+    "node-static": "0.7.10",
+    "opn-cli": "^3.1.0",
+    "qunit": "^2.5.1",
+    "qunit-puppeteer": "^1.0.1",
     "rollup": "0.57.1",
     "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-commonjs": "^9.1.0",
-    "rollup-plugin-json": "^2.3.0",
-    "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-re": "^1.0.6",
     "rollup-plugin-uglify": "^3.0.0",
     "uglify-es": "^3.3.9"
-  },
-  "scripts": {
-    "rollup": "rollup -c"
   },
   "repository": {
     "type": "git",
@@ -46,6 +55,12 @@
     "calculations"
   ],
   "author": "Jan Greis",
+  "contributors": [
+    "Brett Zamir"
+  ],
+  "engines": {
+    "node": ">= 6.13.1"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/janrg/MeeusSunMoon/issues"
