@@ -60,7 +60,7 @@ There are three configuration options that can be set as
 ```js
 MeeusSunMoon.options({
   roundToNearestMinute: true, // default: false
-  returnTimeForPMNS: true, // default: false
+  returnTimeForPNMS: true, // default: false
   dateFormatKeys: {'**': '‡', '--': '†'} // default {'**': '‡', '--': '†'};
 })
 ```
@@ -68,7 +68,7 @@ MeeusSunMoon.options({
 `roundToNearestMinute` rounds the reported time: up if seconds are 30+, down if
 less.
 
-`returnTimeForPMNS` handles the behaviour when no sunrise or sunset time can be
+`returnTimeForPNMS` handles the behaviour when no sunrise or sunset time can be
 returned because the specified region would be experiencing polar night or
 midnight sun on the date. If set to `false`, a string is returned, either `'PN'`
 or `'MS'`. If set to `true`, the return time will be 6:00 local standard time
