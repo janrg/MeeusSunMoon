@@ -1,5 +1,4 @@
-MeeusSunMoon
-============
+# MeeusSunMoon
 
 [![MIT License][license-image]][license-url]
 
@@ -8,14 +7,12 @@ sunset, as well as moon phases.
 
 Based on "Astronomical Algorithms" by Jean Meeus.
 
-
-
 ## Documentation
 
 ### Dependencies
 
 MeeusSunMoon requires [Moment.js](http://momentjs.com/) and
-[Moment Timezone](http://momentjs.com/timezone/)
+[Moment Timezone](http://momentjs.com/timezone/).
 
 ### Installation
 
@@ -41,7 +38,7 @@ The dependencies are best included from a CDN, such as CDNJS:
 
 `npm install meeussunmoon`
 
-For bundling (e.g. with rollup) you can then import the ES6 module via
+For bundling (e.g., with Rollup) you can then import the ES6 module via
 
 ```js
 import MeeusSunMoon from 'meeussunmoon'
@@ -62,7 +59,7 @@ MeeusSunMoon.options({
   roundToNearestMinute: true, // default: false
   returnTimeForPNMS: true, // default: false
   dateFormatKeys: {'**': '‡', '--': '†'} // default {'**': '‡', '--': '†'};
-})
+});
 ```
 
 `roundToNearestMinute` rounds the reported time: up if seconds are 30+, down if
@@ -70,12 +67,12 @@ less.
 
 `returnTimeForPNMS` handles the behaviour when no sunrise or sunset time can be
 returned because the specified region would be experiencing polar night or
-midnight sun on the date. If set to `false`, a string is returned, either `'PN'`
-or `'MS'`. If set to `true`, the return time will be 6:00 local standard time
-(i.e. 7:00 local time if DST is in effect) for sunrise and 18:00 local standard
-time for sunset. Additionally, the moment.tz object that is returned will be
-tagged inside its `creationData` property, with `'--'` for polar night and
-`'**'` for midnight sun. This way, the fact that this is not an actual
+midnight sun on the date. If set to `false`, a string is returned, either
+`'PN'` or `'MS'`. If set to `true`, the return time will be 6:00 local standard
+time (i.e. 7:00 local time if DST is in effect) for sunrise and 18:00 local
+standard time for sunset. Additionally, the moment.tz object that is returned
+will be tagged inside its `creationData` property, with `'--'` for polar night
+and `'**'` for midnight sun. This way, the fact that this is not an actual
 sunrise/sunset time can be retrieved later, e.g. with `MeeusSunMoon.formatCI`
 (see below).
 
@@ -92,8 +89,8 @@ Returns the sunrise or sunset for the given date and location as a moment.tz
 object.
 
 `datetime` is a moment.tz object designating the day for which the sunrise/set
-time should be calculated. The object should either contain a definite timezone,
-or be in UTC, just a UTC offset will lead to unexpected behaviour
+time should be calculated. The object should either contain a definite
+timezone, or be in UTC, just a UTC offset will lead to unexpected behaviour
 
 `latitude` is the geographic latitude in degrees (-90 to 90, North is positive,
 South negative).
@@ -136,9 +133,9 @@ specified, times are returned as UTC.
 
 formatCI is a helper function of MeeusSunMoon which (arguable mis-) uses the
 `creationData` property of a moment object to store custom meta-information,
-in this context to indicate that a given time is a fallback due to no sunrise or
-sunset occuring on the given day. It makes use of the fact that the parser for
-the `String + Format` constructor of moment.js ignores non-alphanumeric
+in this context to indicate that a given time is a fallback due to no sunrise
+or sunset occuring on the given day. It makes use of the fact that the parser
+for the `String + Format` constructor of moment.js ignores non-alphanumeric
 characters. Thus, a key of special symbols can be stored in the `creationData`
 by constructing a date like this:
 
@@ -153,8 +150,8 @@ a string as defined by `dateFormatKeys` is appended to the formatted date.
 
 **Example:**
 ```js
-var myMoment = moment("**12-25-1995 06:00", "MM-DD-YYYY HH:mm");
-console.log(MeeusSunMoon.formatCI(myMoment, "HH:mm"));
+const myMoment = moment('**12-25-1995 06:00', 'MM-DD-YYYY HH:mm');
+console.log(MeeusSunMoon.formatCI(myMoment, 'HH:mm'));
 >> 06:00‡
 ```
 
@@ -163,11 +160,11 @@ console.log(MeeusSunMoon.formatCI(myMoment, "HH:mm"));
 The algorithms themselves use many higher-order corrections in order to achieve
 a high degree of accuracy. To ensure a correct implementation, I have compared
 over 17,000 times across 16 locations spanning extremes of latitude and
-longitude to outside sources such as the US Naval Observatory and found that 97%
-agreed to the minute, with the rest deviating by at most one minute. The only
-exception to this are locations experiencing polar night or midnight sun (i.e.
-within the polar circles) for which - for the days immediately preceeding and
-following periods of polar night or midnight sun - the discrepancy can be
+longitude to outside sources such as the US Naval Observatory and found that
+97% agreed to the minute, with the rest deviating by at most one minute. The
+only exception to this are locations experiencing polar night or midnight sun
+(i.e. within the polar circles) for which - for the days immediately preceding
+and following periods of polar night or midnight sun - the discrepancy can be
 larger.
 
 `test/index.html` can be run to verify this if you downloaded the entire
@@ -191,7 +188,8 @@ Initial release
 
 ## License
 
-MeeusSunMoon is freely distributable under the terms of the [MIT license](LICENSE).
+MeeusSunMoon is freely distributable under the terms of the
+[MIT license](LICENSE).
 
 [license-image]: http://img.shields.io/badge/license-MIT-blue.svg
 [license-url]: LICENSE
