@@ -76,6 +76,10 @@ and `'**'` for midnight sun. This way, the fact that this is not an actual
 sunrise/sunset time can be retrieved later, e.g. with `MeeusSunMoon.formatCI`
 (see below).
 
+For civil, nautical, and astronimical dawn and dusk, if `returnTimeForPNMS`
+is `true`, the times returned are 0:30h, 1:00h, and 1:30h earlier / later,
+respectively, than for sunrise and sunset.
+
 ### Usage
 
 #### Sunrise & Sunset
@@ -99,6 +103,24 @@ South negative).
 positive, West negative).
 
 If there is no sunrise or sunset event on the given day, a string or a tagged
+time will be returned (see above).
+
+#### Civil, Nautidal, and Astronomical Dawn & Dusk
+
+```js
+MeeusSunMoon.civilDawn(datetime, latitude, longitude);
+MeeusSunMoon.civilDusk(datetime, latitude, longitude);
+MeeusSunMoon.nauticalDawn(datetime, latitude, longitude);
+MeeusSunMoon.nauticalDusk(datetime, latitude, longitude);
+MeeusSunMoon.astronomicalDawn(datetime, latitude, longitude);
+MeeusSunMoon.astronomicalDusk(datetime, latitude, longitude);
+```
+
+As above but for civil (center of the sun is 6° below the horizon), nautical
+(center of the sun is 12° below the horizon), and astronomical (center of the
+sun is 18° below the horizon) dawn and dusk.
+
+If the specified event does not occur on the given day, a string or a tagged
 time will be returned (see above).
 
 #### Solar Noon
@@ -159,24 +181,28 @@ console.log(MeeusSunMoon.formatCI(myMoment, 'HH:mm'));
 
 The algorithms themselves use many higher-order corrections in order to achieve
 a high degree of accuracy. To ensure a correct implementation, I have compared
-over 17,000 times across 16 locations spanning extremes of latitude and
-longitude to outside sources such as the US Naval Observatory and found that
-97% agreed to the minute, with the rest deviating by at most one minute. The
-only exception to this are locations experiencing polar night or midnight sun
-(i.e. within the polar circles) for which - for the days immediately preceding
-and following periods of polar night or midnight sun - the discrepancy can be
-larger.
+over 50,000 times across 16 locations spanning extremes of latitude and
+longitude to outside sources such as the US Naval Observatory and
+timeanddate.comand found that almost 98% agreed to the minute, with almost the
+entire rest deviating by at most one minute. The only exception to this are days
+immediately preceeding or following periods for which the given event does not
+occur, where the discrepancy can be larger. For sunrise and sunset, this only
+affects regions within the polar circles which experience polar night and
+midnight sun.
 
 `test/index.html` can be run to verify this if you downloaded the entire
 repository. When `maxError` (maximum deviation in minutes for the test to pass)
-in `test/tests.js` is set to 0, about 3% of the tests will fail. When set to 1,
-all will pass. (For the test locations in northern and southern extremes, a few
-dates just before and just after periods of polar night or midnight sun aren't
-tested, as the accuracy is known to suffer there.)
+in `test/tests.js` is set to 0, about 2% of the tests will fail. When set to 1,
+all will pass. (Some times which fall under the exception above have been
+excluded from testing, they are listed as empty strings in `referenceTimes.js`.)
 
 Tests can also be run in the console via `npm run node-test`.
 
 ## Changelog
+
+### 2.1.0
+
+Added functions for civil, nautical, and astronomical dawn and dusk.
 
 ### 2.0.0
 

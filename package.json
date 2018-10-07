@@ -1,6 +1,6 @@
 {
   "name": "meeussunmoon",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Accurately calculate sunrise, sunset, and moon phases.",
   "main": "dist/meeussunmoon.min.js",
   "module": "src/index.js",

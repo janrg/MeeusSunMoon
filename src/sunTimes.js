@@ -42,9 +42,12 @@ const sunTransit = function (datetime, L) {
  * @param {number} L Longitude.
  * @param {string} flag 'RISE' or 'SET' depending on which event should be
  *     calculated.
+ * @param {number} offset number of degrees below the horizon for the desired
+ *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
+ *     astronomical dawn/dusk.
  * @returns {moment} Sunrise or sunset time.
  */
-const sunRiseSet = function (datetime, phi, L, flag) {
+const sunRiseSet = function (datetime, phi, L, flag, offset = 50 / 60) {
   const timezone = datetime.tz();
   const suntime = moment.tz(
     [datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
@@ -55,7 +58,7 @@ const sunRiseSet = function (datetime, phi, L, flag) {
   const TD = T - (DeltaT / (3600 * 24 * 36525));
   const alpha = sunApparentRightAscension(TD);
   const delta = sunApparentDeclination(TD);
-  const H0 = approxLocalHourAngle(phi, delta);
+  const H0 = approxLocalHourAngle(phi, delta, offset);
   // Sign flip for longitude from AA as we take East as positive
   let m0 = (alpha - L - Theta0) / 360;
   m0 = normalizeM(m0, datetime.utcOffset());
@@ -71,7 +74,7 @@ const sunRiseSet = function (datetime, phi, L, flag) {
   let DeltaM = 1;
   // Repeat if correction is larger than ~9s
   while ((Math.abs(DeltaM) > 0.0001) && (counter < 3)) {
-    DeltaM = sunRiseSetCorrection(T, Theta0, DeltaT, phi, L, m);
+    DeltaM = sunRiseSetCorrection(T, Theta0, DeltaT, phi, L, m, offset);
     m += DeltaM;
     counter++;
   }
@@ -95,11 +98,12 @@ const sunRiseSet = function (datetime, phi, L, flag) {
  * @param {moment} returnDate The calculated time for sunrise or sunset.
  * @param {moment} date The original date from which the event was calculated.
  * @param {int} hour Hour to which the returned datetime should be set.
+ * @param {int} minute Minute to which the returned datetime should be set.
  * @returns {(moment|string)} Time given by parameter 'hour' (+ correction for
  *     DST if applicable) or a string indicating that the location experiences
  *     midnight sun ('MS') or polar night ('PN') on that date.
  */
-const returnPNMS = function (returnDate, date, hour) {
+const returnPNMS = function (returnDate, date, hour, minute = 0) {
   if (returnTimeForPNMS) {
     if (date.isDST()) {
       hour += 1;
@@ -109,7 +113,7 @@ const returnPNMS = function (returnDate, date, hour) {
       .month(date.month())
       .date(date.date())
       .hour(hour)
-      .minute(0)
+      .minute(minute)
       .second(0);
   }
   return returnDate;
@@ -119,10 +123,13 @@ const returnPNMS = function (returnDate, date, hour) {
  * Calculates the approximate local hour angle of the sun at sunrise or sunset.
  * @param {number} phi Latitude (see AA p102 Eq15.1).
  * @param {number} delta Apparent declination of the sun.
+ * @param {number} offset number of degrees below the horizon for the desired
+ *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
+ *     astronomical dawn/dusk.
  * @returns {number} Approximate local hour angle.
  */
-const approxLocalHourAngle = function (phi, delta) {
-  const cosH0 = (auxMath.sind(-50 / 60) -
+const approxLocalHourAngle = function (phi, delta, offset) {
+  const cosH0 = (auxMath.sind(-offset) -
                 auxMath.sind(phi) * auxMath.sind(delta)) /
                 (auxMath.cosd(phi) * auxMath.cosd(delta));
   if (cosH0 < -1) {
@@ -130,14 +137,30 @@ const approxLocalHourAngle = function (phi, delta) {
       throw moment.tz('**2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss',
         'Europe/London');
     } else {
-      throw 'MS';
+      let special = 'MS';
+      if (offset === 6) {
+        special = 'NCD';
+      } else if (offset === 12) {
+        special = 'NND';
+      } else if (offset === 18) {
+        special = 'NAD';
+      }
+      throw special;
     }
   } else if (cosH0 > 1) {
     if (returnTimeForPNMS) {
       throw moment.tz('--2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss',
         'Europe/London');
     } else {
-      throw 'PN';
+      let special = 'PN';
+      if (offset === 6) {
+        special = 'NCD';
+      } else if (offset === 12) {
+        special = 'NND';
+      } else if (offset === 18) {
+        special = 'NAD';
+      }
+      throw special;
     }
   }
   const H0 = auxMath.rad2deg(Math.acos(cosH0));
@@ -188,16 +211,19 @@ const sunTransitCorrection = function (T, Theta0, DeltaT, L, m) {
  * @param {number} phi Latitude.
  * @param {number} L Longitude.
  * @param {number} m Fractional time of day of the event.
+ * @param {number} offset number of degrees below the horizon for the desired
+ *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
+ *     astronomical dawn/dusk.
  * @returns {number} Currection for the sunrise/sunset time.
  */
-const sunRiseSetCorrection = function (T, Theta0, DeltaT, phi, L, m) {
+const sunRiseSetCorrection = function (T, Theta0, DeltaT, phi, L, m, offset) {
   const theta0 = Theta0 + 360.985647 * m;
   const n = m + DeltaT / 864000;
   const alpha = interpolatedRa(T, n);
   const delta = interpolatedDec(T, n);
   const H = localHourAngle(theta0, L, alpha);
   const h = altitude(phi, delta, H);
-  const DeltaM = (h + 50 / 60) /
+  const DeltaM = (h + offset) /
     (360 * auxMath.cosd(delta) * auxMath.cosd(phi) * auxMath.sind(H));
   return DeltaM;
 };

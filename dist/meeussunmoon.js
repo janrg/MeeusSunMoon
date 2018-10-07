@@ -553,9 +553,14 @@
    * @param {number} L Longitude.
    * @param {string} flag 'RISE' or 'SET' depending on which event should be
    *     calculated.
+   * @param {number} offset number of degrees below the horizon for the desired
+   *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
+   *     astronomical dawn/dusk.
    * @returns {moment} Sunrise or sunset time.
    */
   var sunRiseSet = function sunRiseSet(datetime, phi, L, flag) {
+    var offset = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 50 / 60;
+
     var timezone = datetime.tz();
     var suntime = moment.tz([datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
     var DeltaT$$1 = DeltaT(suntime);
@@ -565,7 +570,7 @@
     var TD = T - DeltaT$$1 / (3600 * 24 * 36525);
     var alpha = sunApparentRightAscension(TD);
     var delta = sunApparentDeclination(TD);
-    var H0 = approxLocalHourAngle(phi, delta);
+    var H0 = approxLocalHourAngle(phi, delta, offset);
     // Sign flip for longitude from AA as we take East as positive
     var m0 = (alpha - L - Theta0) / 360;
     m0 = normalizeM(m0, datetime.utcOffset());
@@ -581,7 +586,7 @@
     var DeltaM = 1;
     // Repeat if correction is larger than ~9s
     while (Math.abs(DeltaM) > 0.0001 && counter < 3) {
-      DeltaM = sunRiseSetCorrection(T, Theta0, DeltaT$$1, phi, L, m);
+      DeltaM = sunRiseSetCorrection(T, Theta0, DeltaT$$1, phi, L, m, offset);
       m += DeltaM;
       counter++;
     }
@@ -605,16 +610,19 @@
    * @param {moment} returnDate The calculated time for sunrise or sunset.
    * @param {moment} date The original date from which the event was calculated.
    * @param {int} hour Hour to which the returned datetime should be set.
+   * @param {int} minute Minute to which the returned datetime should be set.
    * @returns {(moment|string)} Time given by parameter 'hour' (+ correction for
    *     DST if applicable) or a string indicating that the location experiences
    *     midnight sun ('MS') or polar night ('PN') on that date.
    */
   var returnPNMS = function returnPNMS(returnDate, date, hour) {
+    var minute = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
     if (exports.returnTimeForPNMS) {
       if (date.isDST()) {
         hour += 1;
       }
-      returnDate.tz(date.tz()).year(date.year()).month(date.month()).date(date.date()).hour(hour).minute(0).second(0);
+      returnDate.tz(date.tz()).year(date.year()).month(date.month()).date(date.date()).hour(hour).minute(minute).second(0);
     }
     return returnDate;
   };
@@ -623,21 +631,40 @@
    * Calculates the approximate local hour angle of the sun at sunrise or sunset.
    * @param {number} phi Latitude (see AA p102 Eq15.1).
    * @param {number} delta Apparent declination of the sun.
+   * @param {number} offset number of degrees below the horizon for the desired
+   *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
+   *     astronomical dawn/dusk.
    * @returns {number} Approximate local hour angle.
    */
-  var approxLocalHourAngle = function approxLocalHourAngle(phi, delta) {
-    var cosH0 = (sind(-50 / 60) - sind(phi) * sind(delta)) / (cosd(phi) * cosd(delta));
+  var approxLocalHourAngle = function approxLocalHourAngle(phi, delta, offset) {
+    var cosH0 = (sind(-offset) - sind(phi) * sind(delta)) / (cosd(phi) * cosd(delta));
     if (cosH0 < -1) {
       if (exports.returnTimeForPNMS) {
         throw moment.tz('**2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss', 'Europe/London');
       } else {
-        throw 'MS';
+        var special = 'MS';
+        if (offset === 6) {
+          special = 'NCD';
+        } else if (offset === 12) {
+          special = 'NND';
+        } else if (offset === 18) {
+          special = 'NAD';
+        }
+        throw special;
       }
     } else if (cosH0 > 1) {
       if (exports.returnTimeForPNMS) {
         throw moment.tz('--2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss', 'Europe/London');
       } else {
-        throw 'PN';
+        var _special = 'PN';
+        if (offset === 6) {
+          _special = 'NCD';
+        } else if (offset === 12) {
+          _special = 'NND';
+        } else if (offset === 18) {
+          _special = 'NAD';
+        }
+        throw _special;
       }
     }
     var H0 = rad2deg(Math.acos(cosH0));
@@ -688,16 +715,19 @@
    * @param {number} phi Latitude.
    * @param {number} L Longitude.
    * @param {number} m Fractional time of day of the event.
+   * @param {number} offset number of degrees below the horizon for the desired
+   *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
+   *     astronomical dawn/dusk.
    * @returns {number} Currection for the sunrise/sunset time.
    */
-  var sunRiseSetCorrection = function sunRiseSetCorrection(T, Theta0, DeltaT$$1, phi, L, m) {
+  var sunRiseSetCorrection = function sunRiseSetCorrection(T, Theta0, DeltaT$$1, phi, L, m, offset) {
     var theta0 = Theta0 + 360.985647 * m;
     var n = m + DeltaT$$1 / 864000;
     var alpha = interpolatedRa(T, n);
     var delta = interpolatedDec(T, n);
     var H = localHourAngle(theta0, L, alpha);
     var h = altitude(phi, delta, H);
-    var DeltaM = (h + 50 / 60) / (360 * cosd(delta) * cosd(phi) * sind(H));
+    var DeltaM = (h + offset) / (360 * cosd(delta) * cosd(phi) * sind(H));
     return DeltaM;
   };
 
@@ -1073,6 +1103,132 @@
   };
 
   /**
+   * Calculates civil dawn (sun 6° below horizon) on the provided date.
+   * @param {moment} datetime Datetime for which civil dawn is calculated. Should
+   *     always contain a timezone or be in UTC, lone UTC offsets might lead to
+   *     unexpected behaviour.
+   * @param {number} phi Latitude of target location.
+   * @param {number} L longitude of target location.
+   * @returns {(moment|string)} Time of civil dawn or a string ('NCD') indicating
+   *     that the location does not experience civil dawn on that date (unless
+   *     returnTimeForPNMS is true).
+   */
+  var civilDawn = function civilDawn(datetime, phi, L) {
+    var civilDawn = void 0;
+    try {
+      civilDawn = sunRiseSet(datetime, phi, L, 'RISE', 6);
+    } catch (err) {
+      return returnPNMS(err, datetime, 5, 30);
+    }
+    return civilDawn;
+  };
+
+  /**
+   * Calculates civil dusk (sun 6° below horizon) on the provided date.
+   * @param {moment} datetime Datetime for which civil dusk is calculated. Should
+   *     always contain a timezone or be in UTC, lone UTC offsets might lead to
+   *     unexpected behaviour.
+   * @param {number} phi Latitude of target location.
+   * @param {number} L longitude of target location.
+   * @returns {(moment|string)} Time of civil dusk or a string ('NCD') indicating
+   *     that the location does not experience civil dusk on that date (unless
+   *     returnTimeForPNMS is true).
+   */
+  var civilDusk = function civilDusk(datetime, phi, L) {
+    var civilDusk = void 0;
+    try {
+      civilDusk = sunRiseSet(datetime, phi, L, 'SET', 6);
+    } catch (err) {
+      return returnPNMS(err, datetime, 18, 30);
+    }
+    return civilDusk;
+  };
+
+  /**
+   * Calculates nautical dawn (sun 12° below horizon) on the provided date.
+   * @param {moment} datetime Datetime for which nautical dawn is calculated.
+   *     Should always contain a timezone or be in UTC, lone UTC offsets might
+   *     lead to unexpected behaviour.
+   * @param {number} phi Latitude of target location.
+   * @param {number} L longitude of target location.
+   * @returns {(moment|string)} Time of nautical dawn or a string ('NND')
+   *     indicating that the location does not experience nautical dawn on that
+   *     date (unless returnTimeForPNMS is true).
+   */
+  var nauticalDawn = function nauticalDawn(datetime, phi, L) {
+    var nauticalDawn = void 0;
+    try {
+      nauticalDawn = sunRiseSet(datetime, phi, L, 'RISE', 12);
+    } catch (err) {
+      return returnPNMS(err, datetime, 5);
+    }
+    return nauticalDawn;
+  };
+
+  /**
+   * Calculates nautical dusk (sun 12° below horizon) on the provided date.
+   * @param {moment} datetime Datetime for which nautical dusk is calculated.
+   *     Should always contain a timezone or be in UTC, lone UTC offsets might
+   *     lead to unexpected behaviour.
+   * @param {number} phi Latitude of target location.
+   * @param {number} L longitude of target location.
+   * @returns {(moment|string)} Time of nautical dusk or a string ('NND')
+   *     indicating that the location does not experience nautical dusk on that
+   *     date (unless returnTimeForPNMS is true).
+   */
+  var nauticalDusk = function nauticalDusk(datetime, phi, L) {
+    var nauticalDusk = void 0;
+    try {
+      nauticalDusk = sunRiseSet(datetime, phi, L, 'SET', 12);
+    } catch (err) {
+      return returnPNMS(err, datetime, 19);
+    }
+    return nauticalDusk;
+  };
+
+  /**
+   * Calculates astronomical dawn (sun 18° below horizon) on the provided date.
+   * @param {moment} datetime Datetime for which astronomical dawn is calculated.
+   *     Should always contain a timezone or be in UTC, lone UTC offsets might
+   *     lead to unexpected behaviour.
+   * @param {number} phi Latitude of target location.
+   * @param {number} L longitude of target location.
+   * @returns {(moment|string)} Time of astronomical dawn or a string ('NAD')
+   *     indicating that the location does not experience astronomical dawn on
+   *     that date (unless returnTimeForPNMS is true).
+   */
+  var astronomicalDawn = function astronomicalDawn(datetime, phi, L) {
+    var astronomicalDawn = void 0;
+    try {
+      astronomicalDawn = sunRiseSet(datetime, phi, L, 'RISE', 18);
+    } catch (err) {
+      return returnPNMS(err, datetime, 4, 30);
+    }
+    return astronomicalDawn;
+  };
+
+  /**
+   * Calculates astronomical dusk (sun 18° below horizon) on the provided date.
+   * @param {moment} datetime Datetime for which astronomical dusk is calculated.
+   *     Should always contain a timezone or be in UTC, lone UTC offsets might
+   *     lead to unexpected behaviour.
+   * @param {number} phi Latitude of target location.
+   * @param {number} L longitude of target location.
+   * @returns {(moment|string)} Time of astronomical dusk or a string ('NAD')
+   *     indicating that the location does not experience astronomical dusk on
+   *     that date (unless returnTimeForPNMS is true).
+   */
+  var astronomicalDusk = function astronomicalDusk(datetime, phi, L) {
+    var astronomicalDusk = void 0;
+    try {
+      astronomicalDusk = sunRiseSet(datetime, phi, L, 'SET', 18);
+    } catch (err) {
+      return returnPNMS(err, datetime, 19, 30);
+    }
+    return astronomicalDusk;
+  };
+
+  /**
    * Calculates solar noon on the provided date.
    * @param {moment} datetime Datetime for which solar noon is calculated. Should
    *     always contain a timezone or be in UTC, lone UTC offsets might lead to
@@ -1135,6 +1291,12 @@
   exports.formatCI = formatCI;
   exports.sunrise = sunrise;
   exports.sunset = sunset;
+  exports.civilDawn = civilDawn;
+  exports.civilDusk = civilDusk;
+  exports.nauticalDawn = nauticalDawn;
+  exports.nauticalDusk = nauticalDusk;
+  exports.astronomicalDawn = astronomicalDawn;
+  exports.astronomicalDusk = astronomicalDusk;
   exports.solarNoon = solarNoon;
   exports.yearMoonPhases = yearMoonPhases;
 

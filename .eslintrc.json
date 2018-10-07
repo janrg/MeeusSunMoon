@@ -8,7 +8,7 @@
         "block-scoped-var": "error",
         "camelcase": ["error", { "properties": "always" }],
         "class-methods-use-this": "error",
-        "complexity": ["error", 10],
+        "complexity": ["error", 11],
         "computed-property-spacing": ["error", "never"],
         "consistent-return": "error",
         "consistent-this": "error",
