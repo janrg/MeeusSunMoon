@@ -105,7 +105,7 @@ positive, West negative).
 If there is no sunrise or sunset event on the given day, a string or a tagged
 time will be returned (see above).
 
-#### Civil, Nautidal, and Astronomical Dawn & Dusk
+#### Civil, Nautical, and Astronomical Dawn & Dusk
 
 ```js
 MeeusSunMoon.civilDawn(datetime, latitude, longitude);
