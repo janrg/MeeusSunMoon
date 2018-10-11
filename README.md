@@ -76,7 +76,7 @@ and `'**'` for midnight sun. This way, the fact that this is not an actual
 sunrise/sunset time can be retrieved later, e.g. with `MeeusSunMoon.formatCI`
 (see below).
 
-For civil, nautical, and astronimical dawn and dusk, if `returnTimeForPNMS`
+For civil, nautical, and astronomical dawn and dusk, if `returnTimeForPNMS`
 is `true`, the times returned are 0:30h, 1:00h, and 1:30h earlier / later,
 respectively, than for sunrise and sunset.
 
@@ -183,7 +183,7 @@ The algorithms themselves use many higher-order corrections in order to achieve
 a high degree of accuracy. To ensure a correct implementation, I have compared
 over 50,000 times across 16 locations spanning extremes of latitude and
 longitude to outside sources such as the US Naval Observatory and
-timeanddate.comand found that almost 98% agreed to the minute, with almost the
+timeanddate.com and found that almost 98% agreed to the minute, with almost the
 entire rest deviating by at most one minute. The only exception to this are days
 immediately preceeding or following periods for which the given event does not
 occur, where the discrepancy can be larger. For sunrise and sunset, this only
