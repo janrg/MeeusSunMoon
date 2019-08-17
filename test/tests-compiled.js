@@ -4,10 +4,11 @@
  * licensed under MIT
  */
 
-(function (factory) {
-  typeof define === 'function' && define.amd ? define(factory) :
-  factory();
-}(function () { 'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('moment-timezone')) :
+  typeof define === 'function' && define.amd ? define(['moment-timezone'], factory) :
+  (global = global || self, factory(global.momentNs));
+}(this, function (momentNs) { 'use strict';
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -121,12 +122,14 @@
     return y;
   };
 
+  var moment$1 = momentNs;
   /**
    * Converts a datetime in UTC to the corresponding Julian Date (see AA p60f).
    * @param {moment} datetime Datetime to be converted.
    * @returns {number} Julian date (fractional number of days since 1 January
    *     4713BC according to the proleptic Julian calendar.
    */
+
   var datetimeToJD = function datetimeToJD(datetime) {
     var Y = datetime.year(); // Months are zero-indexed
 
@@ -140,7 +143,7 @@
 
     var A = Math.floor(Y / 100); // Need a different B if we are before introduction of the Gregorian Calendar
 
-    var gregorianCutoff = moment('1582-10-15T12:00:00Z');
+    var gregorianCutoff = moment$1('1582-10-15T12:00:00Z');
     var B = 0;
 
     if (datetime.isAfter(gregorianCutoff)) {
@@ -189,7 +192,7 @@
       year -= 1;
     }
 
-    var datetime = moment.tz('2000-01-01T12:00:00', 'UTC');
+    var datetime = moment$1.tz('2000-01-01T12:00:00', 'UTC');
     datetime.year(year); // Months are zero-indexed
 
     datetime.month(month - 1);
@@ -593,6 +596,7 @@
 
   var nutations = [[0, 0, 0, 0, 1, -171996, -174.2, 92025, 8.9], [-2, 0, 0, 2, 2, -13187, -1.6, 5736, -3.1], [0, 0, 0, 2, 2, -2274, -0.2, 977, -0.5], [0, 0, 0, 0, 2, 2062, 0.2, -895, 0.5], [0, 1, 0, 0, 0, 1426, -3.4, 54, -0.1], [0, 0, 1, 0, 0, 712, 0.1, -7, 0], [-2, 1, 0, 2, 2, -517, 1.2, 224, -0.6], [0, 0, 0, 2, 1, -386, -0.4, 200, 0], [0, 0, 1, 2, 2, -301, 0, 129, -0.1], [-2, -1, 0, 2, 2, 217, -0.5, -95, 0.3], [-2, 0, 1, 0, 0, -158, 0, 0, 0], [-2, 0, 0, 2, 1, 129, 0.1, -70, 0], [0, 0, -1, 2, 2, 123, 0, -53, 0], [2, 0, 0, 0, 0, 63, 0, 0, 0], [0, 0, 1, 0, 1, 63, 0.1, -33, 0], [2, 0, -1, 2, 2, -59, 0, 26, 0], [0, 0, -1, 0, 1, -58, -0.1, 32, 0], [0, 0, 1, 2, 1, -51, 0, 27, 0], [-2, 0, 2, 0, 0, 48, 0, 0, 0], [0, 0, -2, 2, 1, 46, 0, -24, 0], [2, 0, 0, 2, 2, -38, 0, 16, 0], [0, 0, 2, 2, 2, -31, 0, 13, 0], [0, 0, 2, 0, 0, 29, 0, 0, 0], [-2, 0, 1, 2, 2, 29, 0, -12, 0], [0, 0, 0, 2, 0, 26, 0, 0, 0], [-2, 0, 0, 2, 0, -22, 0, 0, 0], [0, 0, -1, 2, 1, 21, 0, -10, 0], [0, 2, 0, 0, 0, 17, -0.1, 0, 0], [2, 0, -1, 0, 1, 16, 0, -8, 0], [-2, 2, 0, 2, 2, -16, 0.1, 7, 0], [0, 1, 0, 0, 1, -15, 0, 9, 0], [-2, 0, 1, 0, 1, -13, 0, 7, 0], [0, -1, 0, 0, 1, -12, 0, 6, 0], [0, 0, 2, -2, 0, 11, 0, 0, 0], [2, 0, -1, 2, 1, -10, 0, 5, 0], [2, 0, 1, 2, 2, -8, 0, 3, 0], [0, 1, 0, 2, 2, 7, 0, -3, 0], [-2, 1, 1, 0, 0, -7, 0, 0, 0], [0, -1, 0, 2, 2, -7, 0, 3, 0], [2, 0, 0, 2, 1, -7, 0, 3, 0], [2, 0, 1, 0, 0, 6, 0, 0, 0], [-2, 0, 2, 2, 2, 6, 0, -3, 0], [-2, 0, 1, 2, 1, 6, 0, -3, 0], [2, 0, -2, 0, 1, -6, 0, 3, 0], [2, 0, 0, 0, 1, -6, 0, 3, 0], [0, -1, 1, 0, 0, 5, 0, 0, 0], [-2, -1, 0, 2, 1, -5, 0, 3, 0], [-2, 0, 0, 0, 1, -5, 0, 3, 0], [0, 0, 2, 2, 1, -5, 0, 3, 0], [-2, 0, 2, 0, 1, 4, 0, 0, 0], [-2, 1, 0, 2, 1, 4, 0, 0, 0], [0, 0, 1, -2, 0, 4, 0, 0, 0], [-1, 0, 1, 0, 0, -4, 0, 0, 0], [-2, 1, 0, 0, 0, -4, 0, 0, 0], [1, 0, 0, 0, 0, -4, 0, 0, 0], [0, 0, 1, 2, 0, 3, 0, 0, 0], [0, 0, -2, 2, 2, -3, 0, 0, 0], [-1, -1, 1, 0, 0, -3, 0, 0, 0], [0, 1, 1, 0, 0, -3, 0, 0, 0], [0, -1, 1, 2, 2, -3, 0, 0, 0], [2, -1, -1, 2, 2, -3, 0, 0, 0], [0, 0, 3, 2, 2, 3, 0, 0, 0], [2, -1, 0, 2, 2, -3, 0, 0, 0]];
 
+  var moment$2 = momentNs;
   /**
    * Calculates the solar transit time on a date at a given longitude (see AA
    * p102f).
@@ -603,7 +607,7 @@
 
   var sunTransit = function sunTransit(datetime, L) {
     var timezone = datetime.tz();
-    var transit = moment.tz([datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
+    var transit = moment$2.tz([datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
     var DeltaT$1 = DeltaT(transit);
     var T = datetimeToT(transit);
     var Theta0 = apparentSiderealTimeGreenwhich(T); // Want 0h TD for this, not UT
@@ -643,7 +647,7 @@
   var sunRiseSet = function sunRiseSet(datetime, phi, L, flag) {
     var offset = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 50 / 60;
     var timezone = datetime.tz();
-    var suntime = moment.tz([datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
+    var suntime = moment$2.tz([datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
     var DeltaT$1 = DeltaT(suntime);
     var T = datetimeToT(suntime);
     var Theta0 = apparentSiderealTimeGreenwhich(T); // Want 0h TD for this, not UT
@@ -731,7 +735,7 @@
 
     if (cosH0 < -1) {
       if (returnTimeForPNMS) {
-        throw moment.tz('**2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss', 'Europe/London');
+        throw moment$2.tz('**2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss', 'Europe/London');
       } else {
         var special = 'MS';
 
@@ -747,7 +751,7 @@
       }
     } else if (cosH0 > 1) {
       if (returnTimeForPNMS) {
-        throw moment.tz('--2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss', 'Europe/London');
+        throw moment$2.tz('--2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss', 'Europe/London');
       } else {
         var _special = 'PN';
 
@@ -1149,6 +1153,7 @@
     return reduceAngle(L0);
   };
 
+  var moment$3 = momentNs;
   var roundToNearestMinute = false;
   var returnTimeForPNMS = false;
   var dateFormatKeys = {
@@ -1411,8 +1416,8 @@
 
 
   var yearMoonPhases = function yearMoonPhases(year, phase, timezone) {
-    var yearBegin = moment([year]);
-    var yearEnd = moment([year + 1]); // this will give us k for the first new moon of the year or earlier
+    var yearBegin = moment$3([year]);
+    var yearEnd = moment$3([year + 1]); // this will give us k for the first new moon of the year or earlier
 
     var k = Math.floor(approxK(yearBegin)) - 1; // taking 15 events will make sure we catch every event in the year
 

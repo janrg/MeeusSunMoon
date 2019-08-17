@@ -1,6 +1,9 @@
+import * as momentNs from 'moment-timezone';
 import * as moonPhases from './moonPhases.js';
 import * as sunTimes from './sunTimes.js';
 import * as timeConversions from './timeConversions.js';
+
+const moment = momentNs;
 
 let roundToNearestMinute = false;
 let returnTimeForPNMS = false;

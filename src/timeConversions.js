@@ -1,3 +1,7 @@
+import * as momentNs from 'moment-timezone';
+
+const moment = momentNs;
+
 /**
  * Converts a datetime in UTC to the corresponding Julian Date (see AA p60f).
  * @param {moment} datetime Datetime to be converted.
