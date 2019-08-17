@@ -1,5 +1,5 @@
 import babel from 'rollup-plugin-babel';
-import uglify from 'rollup-plugin-uglify';
+import {terser} from 'rollup-plugin-terser';
 
 const copyrightNotice = `/**
  * @license MeeusSunMoon v2.0.0\n * (c) 2018 Jan Greis
@@ -29,7 +29,7 @@ function rollupConfig (minify, format) {
     config.plugins.push(babel());
   }
   if (minify) {
-    config.plugins.push(uglify({output: {preamble: copyrightNotice}}));
+    config.plugins.push(terser({output: {preamble: copyrightNotice}}));
     config.output.sourcemap = true;
   }
   return config;

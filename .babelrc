@@ -1,11 +1,10 @@
 {
   "presets": [
-    ["env", {
+    ["@babel/preset-env", {
       "targets": {
         "node": "current",
         "browsers": ["last 4 versions", "Firefox ESR"]
       },
-      "modules": false
     }]
-  ],
+  ]
 }
