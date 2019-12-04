@@ -1,10 +1,7 @@
 import * as auxMath from './auxMath.js';
 import * as constants from './constants.js';
-import * as momentNs from 'moment-timezone';
 import * as timeConversions from './timeConversions.js';
 import {returnTimeForPNMS, roundToNearestMinute} from './index.js';
-
-const moment = momentNs;
 
 /**
  * Calculates the solar transit time on a date at a given longitude (see AA

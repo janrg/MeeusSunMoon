@@ -3,15 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>MeeusSunMoon QUnit Test</title>
-  <link rel="stylesheet" href="../node_modules/qunit/qunit/qunit.css">
-</head>
-<body>
-  <div id="qunit"></div>
-  <div id="qunit-fixture"></div>
-  <script src="../node_modules/qunit/qunit/qunit.js"></script>
+  <title>MeeusSunMoon Tests</title>
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+  <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+
+  <script src="../node_modules/mocha/mocha.js"></script>
+  <script src="../node_modules/chai/chai.js"></script>
+
   <script src="../node_modules/moment/moment.js"></script>
   <script src="../node_modules/moment-timezone/builds/moment-timezone-with-data.min.js"></script>
-  <script src="tests-compiled.js"></script>
+
+  <script>
+  /* globals mocha */
+  window.assert = chai.assert;
+  mocha.setup('bdd');
+  </script>
+  <script type="module" src="tests.js"></script>
+  <script type="module">
+  /* globals mocha */
+  mocha.run();
+  </script>
+</head>
+<body>
+  <div id="mocha"></div>
 </body>
 </html>

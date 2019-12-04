@@ -40,16 +40,5 @@ export default [
   rollupConfig(false, 'umd'),
   rollupConfig(true, 'umd'),
   rollupConfig(false, 'es'),
-  rollupConfig(true, 'es'),
-  {
-    external: ['moment-timezone'],
-    input: 'test/tests.js',
-    output: {
-      banner: copyrightNotice,
-      file: 'test/tests-compiled.js',
-      format: 'umd',
-      name: 'MeeusSunMoonTests'
-    },
-    plugins: [babel()]
-  }
+  rollupConfig(true, 'es')
 ];

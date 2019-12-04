@@ -8,10 +8,12 @@
     "test": "test"
   },
   "scripts": {
+    "start": "static -p 8049",
     "eslint": "eslint .",
     "rollup": "rollup -c",
-    "node-qunit": "./node_modules/node-qunit/bin/cli.js --timeout 10000 -c dist/meeussunmoon.js -t test/tests-compiled.js -d moment:node_modules/moment/moment.js node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
-    "node-test": "npm run eslint && npm run rollup && npm run node-qunit",
+    "mocha": "_mocha --bail --timeout 10000 test/tests.js --delay --delay --require esm --require test/node-env.js",
+    "browser-test": "open-cli http://localhost:8049/test/ && npm start",
+    "node-test": "npm run eslint && npm run rollup && npm run mocha",
     "test": "npm run node-test"
   },
   "dependencies": {
@@ -23,18 +25,18 @@
     "@babel/core": "^7.7.4",
     "@babel/node": "^7.7.4",
     "@babel/preset-env": "^7.7.4",
+    "babel-eslint": "^10.0.3",
+    "chai": "^4.2.0",
     "eslint": "6.7.2",
     "eslint-config-standard": "14.1.0",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-node": "10.0.0",
     "eslint-plugin-promise": "4.2.1",
-    "node-qunit": "^1.0.0",
-    "node-qunit-puppeteer": "^1.0.16",
     "eslint-plugin-standard": "4.0.1",
     "esm": "^3.2.25",
+    "mocha": "^6.2.2",
     "node-static": "0.7.11",
     "open-cli": "^5.0.0",
-    "qunit": "^2.9.3",
     "rollup": "1.27.8",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-terser": "^5.1.2"

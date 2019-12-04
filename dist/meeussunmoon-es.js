@@ -4,8 +4,6 @@
  * licensed under MIT
  */
 
-import * as momentNs from 'moment-timezone';
-
 /**
  * Converts angles in degrees to radians.
  * @param {number} deg Angle in degrees.
@@ -88,8 +86,6 @@ const interpolateFromThree = function (y1, y2, y3, n, normalize) {
   const y = y2 + (n / 2) * (a + b + n * c);
   return y;
 };
-
-const moment = momentNs;
 
 /**
  * Converts a datetime in UTC to the corresponding Julian Date (see AA p60f).
@@ -670,8 +666,6 @@ const nutations =
    [ 0,  0,  3,  2, 2,      3,       0,     0,    0],
    [ 2, -1,  0,  2, 2,     -3,       0,     0,    0]];
 
-const moment$1 = momentNs;
-
 /**
  * Calculates the solar transit time on a date at a given longitude (see AA
  * p102f).
@@ -681,7 +675,7 @@ const moment$1 = momentNs;
  */
 const sunTransit = function (datetime, L) {
   const timezone = datetime.tz();
-  const transit = moment$1.tz(
+  const transit = moment.tz(
     [datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
   const DeltaT$1 = DeltaT(transit);
   const T = datetimeToT(transit);
@@ -718,7 +712,7 @@ const sunTransit = function (datetime, L) {
  */
 const sunRiseSet = function (datetime, phi, L, flag, offset = 50 / 60) {
   const timezone = datetime.tz();
-  const suntime = moment$1.tz(
+  const suntime = moment.tz(
     [datetime.year(), datetime.month(), datetime.date(), 0, 0, 0], 'UTC');
   const DeltaT$1 = DeltaT(suntime);
   const T = datetimeToT(suntime);
@@ -803,7 +797,7 @@ const approxLocalHourAngle = function (phi, delta, offset) {
                 (cosd(phi) * cosd(delta));
   if (cosH0 < -1) {
     if (returnTimeForPNMS) {
-      throw moment$1.tz('**2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss',
+      throw moment.tz('**2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss',
         'Europe/London');
     } else {
       let special = 'MS';
@@ -818,7 +812,7 @@ const approxLocalHourAngle = function (phi, delta, offset) {
     }
   } else if (cosH0 > 1) {
     if (returnTimeForPNMS) {
-      throw moment$1.tz('--2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss',
+      throw moment.tz('--2000-01-01 12:00:00', 'YYYY-MM-DD HH:mm:ss',
         'Europe/London');
     } else {
       let special = 'PN';
@@ -1204,8 +1198,6 @@ const sunMeanLongitude$1 = function (T) {
   return reduceAngle(L0);
 };
 
-const moment$2 = momentNs;
-
 let roundToNearestMinute = false;
 let returnTimeForPNMS = false;
 let dateFormatKeys = {'**': '‡', '--': '†'};
@@ -1434,8 +1426,8 @@ const solarNoon = function (datetime, L) {
  * @returns {array} Array of moment objects for moons of the given phase.
  */
 const yearMoonPhases = function (year, phase, timezone) {
-  const yearBegin = moment$2([year]);
-  const yearEnd = moment$2([year + 1]);
+  const yearBegin = moment([year]);
+  const yearEnd = moment([year + 1]);
   // this will give us k for the first new moon of the year or earlier
   let k = Math.floor(approxK(yearBegin)) - 1;
   // taking 15 events will make sure we catch every event in the year
