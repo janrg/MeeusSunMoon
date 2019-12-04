@@ -44,7 +44,7 @@ export default [
     input: 'test/tests.js',
     output: {
       banner: copyrightNotice,
-      file: `test/tests-compiled.js`,
+      file: 'test/tests-compiled.js',
       format: 'umd',
       name: 'MeeusSunMoonTests'
     },

@@ -57,6 +57,7 @@
         "no-void": "error",
         "no-warning-comments": ["error", {"terms": ["todo", "fix", "fixme"]}],
         "no-throw-literal": "off",
+        "object-curly-newline": "off",
         "object-curly-spacing": ["error", "never"],
         "object-shorthand": "error",
         "prefer-const": "error",

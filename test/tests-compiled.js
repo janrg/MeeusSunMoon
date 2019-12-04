@@ -8,7 +8,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('moment-timezone')) :
   typeof define === 'function' && define.amd ? define(['moment-timezone'], factory) :
   (global = global || self, factory(global.momentNs));
-}(this, function (momentNs) { 'use strict';
+}(this, (function (momentNs) { 'use strict';
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -1756,4 +1756,4 @@
     assert.ok(astronomicalDusk$1 === '20:30‡', "".concat(astronomicalDusk$1, "/20:30\u2021"));
   });
 
-}));
+})));

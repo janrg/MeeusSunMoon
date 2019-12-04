@@ -8,7 +8,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('moment-timezone')) :
   typeof define === 'function' && define.amd ? define(['exports', 'moment-timezone'], factory) :
   (global = global || self, factory(global.MeeusSunMoon = {}, global.momentNs));
-}(this, function (exports, momentNs) { 'use strict';
+}(this, (function (exports, momentNs) { 'use strict';
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -1475,4 +1475,4 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));
