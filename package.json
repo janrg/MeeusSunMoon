@@ -9,12 +9,23 @@
   },
   "scripts": {
     "start": "static -p 8049",
+    "coverage": "open-cli http://localhost:8049/coverage/ && npm start",
     "eslint": "eslint .",
     "rollup": "rollup -c",
     "mocha": "_mocha --bail --timeout 10000 test/tests.js --delay --delay --require esm --require test/node-env.js",
     "browser-test": "open-cli http://localhost:8049/test/ && npm start",
     "node-test": "npm run eslint && npm run rollup && npm run mocha",
+    "test-cov": "npm run eslint && npm run rollup && rm -Rf node_modules/.cache && nyc npm run mocha",
     "test": "npm run node-test"
+  },
+  "nyc": {
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "exclude": [
+      "test"
+    ]
   },
   "dependencies": {
     "moment": "^2.24.0",
@@ -36,6 +47,7 @@
     "esm": "^3.2.25",
     "mocha": "^6.2.2",
     "node-static": "0.7.11",
+    "nyc": "^14.1.1",
     "open-cli": "^5.0.0",
     "rollup": "1.27.8",
     "rollup-plugin-babel": "^4.3.3",
