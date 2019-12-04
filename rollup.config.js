@@ -14,6 +14,7 @@ const copyrightNotice = `/**
 */
 function rollupConfig (minify, format) {
   const config = {
+    external: ['moment-timezone'],
     input: 'src/index.js',
     output: {
       banner: copyrightNotice,
@@ -41,6 +42,7 @@ export default [
   rollupConfig(false, 'es'),
   rollupConfig(true, 'es'),
   {
+    external: ['moment-timezone'],
     input: 'test/tests.js',
     output: {
       banner: copyrightNotice,
