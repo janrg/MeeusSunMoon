@@ -14,6 +14,7 @@ const copyrightNotice = `/**
 */
 function rollupConfig (minify, format) {
   const config = {
+    external: ['moment-timezone'],
     input: 'src/index.js',
     output: {
       banner: copyrightNotice,
@@ -39,15 +40,5 @@ export default [
   rollupConfig(false, 'umd'),
   rollupConfig(true, 'umd'),
   rollupConfig(false, 'es'),
-  rollupConfig(true, 'es'),
-  {
-    input: 'test/tests.js',
-    output: {
-      banner: copyrightNotice,
-      file: `test/tests-compiled.js`,
-      format: 'umd',
-      name: 'MeeusSunMoonTests'
-    },
-    plugins: [babel()]
-  }
+  rollupConfig(true, 'es')
 ];

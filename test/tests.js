@@ -1,4 +1,3 @@
-/* eslint-env qunit */
 /* eslint-disable complexity */
 import * as MeeusSunMoon from '../src/index.js';
 import {locations, moonPhases} from './referenceTimes.js';
@@ -7,11 +6,10 @@ import {locations, moonPhases} from './referenceTimes.js';
 // rounding here, the difference is the same it would be if we rounded down.
 MeeusSunMoon.options({roundToNearestMinute: false});
 
-QUnit.config.hidepassed = true;
 const maxError = 1;
 
 // Test that the correct times for moon phases are returned
-QUnit.test('MoonPhases', function (assert) {
+it('MoonPhases', function () {
   const newMoons = MeeusSunMoon.yearMoonPhases(2016, 0);
   const firstQuarterMoons = MeeusSunMoon.yearMoonPhases(2016, 1);
   const fullMoons = MeeusSunMoon.yearMoonPhases(2016, 2);
@@ -56,7 +54,7 @@ QUnit.test('MoonPhases', function (assert) {
 });
 
 // Now test that it works for returning moon phases in local time:
-QUnit.test('MoonPhases with Timezone', function (assert) {
+it('MoonPhases with Timezone', function () {
   const timezone = 'Pacific/Auckland';
   const newMoons = MeeusSunMoon.yearMoonPhases(2016, 0, timezone);
   const firstQuarterMoons = MeeusSunMoon.yearMoonPhases(2016, 1, timezone);
@@ -109,9 +107,10 @@ QUnit.test('MoonPhases with Timezone', function (assert) {
 // Test sunrise, solar noon, and trnsit times for a range of locations for all
 // of 2016
 for (const {name, data, timezone, latitude, longitude} of locations) {
-  QUnit.test(`Sunrise/Solar Noon/Sunset:${
+  it(`Sunrise/Solar Noon/Sunset:${
     name
-  }`, function (assert) { // jshint ignore:line
+  }`, function () {
+    this.timeout(50000); // eslint-disable-line no-invalid-this
     for (let i = 0; i < data.length; i++) {
       const date = moment.tz(data[i][0], timezone);
       const sunrise = MeeusSunMoon.sunrise(date, latitude, longitude);
@@ -333,7 +332,7 @@ for (const {name, data, timezone, latitude, longitude} of locations) {
 }
 
 // const dateFormatKeys = {'**': '‡', '--': '†'};
-QUnit.test('No Event Cases', function (assert) {
+it('No Event Cases', function () {
   const datePN = moment.tz('2016-07-01 12:00', 'Antarctica/McMurdo');
   const dateMS = moment.tz('2016-01-01 12:00', 'Antarctica/McMurdo');
   let sunrisePN = MeeusSunMoon.sunrise(datePN, -77.83333333, 166.6);

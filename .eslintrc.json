@@ -1,5 +1,6 @@
 {
     "extends": "standard",
+    "parser": "babel-eslint",
     "rules": {
         "array-bracket-spacing": ["error", "never"],
         "array-callback-return": "error",
@@ -57,6 +58,7 @@
         "no-void": "error",
         "no-warning-comments": ["error", {"terms": ["todo", "fix", "fixme"]}],
         "no-throw-literal": "off",
+        "object-curly-newline": "off",
         "object-curly-spacing": ["error", "never"],
         "object-shorthand": "error",
         "prefer-const": "error",
@@ -78,6 +80,13 @@
         "valid-jsdoc": ["error", {"prefer": {"arg": "param", "argument": "param", "class": "constructor", "return": "returns", "virtual": "abstract"}, "requireReturn": false}],
         "wrap-regex": "error"
     },
+    "overrides": [{
+      "env": {"mocha": true},
+      "files": "test/**",
+      "globals": {
+          "assert": true
+      }
+    }],
     "globals": {
         "moment": false
     }
