@@ -12,7 +12,7 @@
     "coverage": "open-cli http://localhost:8049/coverage/ && npm start",
     "eslint": "eslint .",
     "rollup": "rollup -c",
-    "mocha": "_mocha --timeout 10000 test/tests.js --delay --delay --require esm --require test/node-env.js",
+    "mocha": "_mocha --timeout 10000 test/tests.js --delay --require esm --require test/node-env.js",
     "browser-test": "open-cli http://localhost:8049/test/ && npm start",
     "node-test": "npm run eslint && npm run rollup && npm run mocha",
     "test-cov": "npm run eslint && npm run rollup && rm -Rf node_modules/.cache && nyc npm run mocha",
