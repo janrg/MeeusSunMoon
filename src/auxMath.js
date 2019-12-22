@@ -44,16 +44,6 @@ const reduceAngle = function (angle) {
 };
 
 /**
- * Takes the modulo of a number using floored division.
- * @param {number} a Original number.
- * @param {number} n divisor.
- * @returns {number} a mod n.
- */
-const modulo = function (a, n) {
-  return a - n * (Math.floor(a / n));
-};
-
-/**
  * Evaluates a polynomial in the form A + Bx + Cx^2...
  * @param {number} variable Value of x in the polynomial.
  * @param {array} coeffs Array of coefficients [A, B, C...].
@@ -91,5 +81,5 @@ const interpolateFromThree = function (y1, y2, y3, n, normalize) {
   return y;
 };
 
-export {deg2rad, rad2deg, sind, cosd, reduceAngle, modulo, polynomial,
+export {deg2rad, rad2deg, sind, cosd, reduceAngle, polynomial,
   interpolateFromThree};
