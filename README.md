@@ -200,6 +200,14 @@ Tests can also be run in the console via `npm run node-test`.
 
 ## Changelog
 
+### 2.1.2
+
+Updated dependencies, use moment import as global, added coverage
+
+### 2.1.1
+
+Updated dependencies, fixed imports for node usage
+
 ### 2.1.0
 
 Added functions for civil, nautical, and astronomical dawn and dusk.
