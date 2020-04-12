@@ -4,7 +4,7 @@
  * @returns {number} Angle in radians.
  */
 const deg2rad = function (deg) {
-  return deg * 0.017453292519943295;
+    return deg * 0.017453292519943295;
 };
 
 /**
@@ -13,7 +13,7 @@ const deg2rad = function (deg) {
  * @returns {number} Angle in degrees.
  */
 const rad2deg = function (rad) {
-  return rad * 57.29577951308232;
+    return rad * 57.29577951308232;
 };
 
 /**
@@ -22,7 +22,7 @@ const rad2deg = function (rad) {
  * @returns {number} Sine of the angle.
  */
 const sind = function (deg) {
-  return Math.sin(deg2rad(deg));
+    return Math.sin(deg2rad(deg));
 };
 
 /**
@@ -31,7 +31,7 @@ const sind = function (deg) {
  * @returns {number} Cosine of the angle.
  */
 const cosd = function (deg) {
-  return Math.cos(deg2rad(deg));
+    return Math.cos(deg2rad(deg));
 };
 
 /**
@@ -40,7 +40,7 @@ const cosd = function (deg) {
  * @returns {number} Reduced angle in degrees.
  */
 const reduceAngle = function (angle) {
-  return angle - (360 * Math.floor(angle / 360));
+    return angle - (360 * Math.floor(angle / 360));
 };
 
 /**
@@ -50,14 +50,14 @@ const reduceAngle = function (angle) {
  * @returns {number} Sum of the polynomial.
  */
 const polynomial = function (variable, coeffs) {
-  let varPower = 1;
-  let sum = 0.0;
-  const numCoeffs = coeffs.length;
-  for (let i = 0; i < numCoeffs; i++) {
-    sum += varPower * coeffs[i];
-    varPower *= variable;
-  }
-  return sum;
+    let varPower = 1;
+    let sum = 0.0;
+    const numCoeffs = coeffs.length;
+    for (let i = 0; i < numCoeffs; i++) {
+        sum += varPower * coeffs[i];
+        varPower *= variable;
+    }
+    return sum;
 };
 
 /**
@@ -66,20 +66,22 @@ const polynomial = function (variable, coeffs) {
  * @param {number} y2 Middle value of the interval.
  * @param {number} y3 End value of the interval.
  * @param {number} n Location (-0.5 >= n >= 0.5) of result in the interval.
- * @param {bool} normalize Whether the final result should be normalized.
+ * @param {boolean} normalize Whether the final result should be normalized.
  * @returns {number} Interpolated result.
  */
-const interpolateFromThree = function (y1, y2, y3, n, normalize) {
-  let a = y2 - y1;
-  let b = y3 - y2;
-  if (typeof normalize !== 'undefined' && normalize) {
-    if (a < 0) { a += 360; }
-    if (b < 0) { b += 360; }
-  }
-  const c = b - a;
-  const y = y2 + (n / 2) * (a + b + n * c);
-  return y;
+const interpolateFromThree = function (y1, y2, y3, n, normalize = false) {
+    let a = y2 - y1;
+    let b = y3 - y2;
+    if (typeof normalize !== 'undefined' && normalize) {
+        if (a < 0) {
+            a += 360;
+        }
+        if (b < 0) {
+            b += 360;
+        }
+    }
+    const c = b - a;
+    return y2 + (n / 2) * (a + b + n * c);
 };
 
-export {deg2rad, rad2deg, sind, cosd, reduceAngle, polynomial,
-  interpolateFromThree};
+export { deg2rad, rad2deg, sind, cosd, reduceAngle, polynomial, interpolateFromThree };

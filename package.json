@@ -1,6 +1,6 @@
 {
   "name": "meeussunmoon",
-  "version": "2.1.2",
+  "version": "3.0.0",
   "description": "Accurately calculate sunrise, sunset, and moon phases.",
   "main": "dist/meeussunmoon.min.js",
   "module": "src/index.js",
@@ -12,7 +12,7 @@
     "coverage": "open-cli http://localhost:8049/coverage/ && npm start",
     "eslint": "eslint .",
     "rollup": "rollup -c",
-    "mocha": "_mocha --timeout 10000 test/tests.js --delay --require esm --require test/node-env.js",
+    "mocha": "_mocha --timeout 10000 test/tests.js --delay --require esm",
     "browser-test": "open-cli http://localhost:8049/test/ && npm start",
     "node-test": "npm run eslint && npm run rollup && npm run mocha",
     "test-cov": "npm run eslint && npm run rollup && rm -Rf node_modules/.cache && nyc npm run mocha",
@@ -28,8 +28,8 @@
     ]
   },
   "dependencies": {
-    "moment": "^2.24.0",
-    "moment-timezone": "^0.5.28"
+    "luxon": "^1.23.0",
+    "reify": "^0.20.12"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",

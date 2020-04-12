@@ -1,391 +1,210 @@
 /* eslint-disable complexity */
-import * as MeeusSunMoon from '../src/index.js';
-import {locations, moonPhases} from './referenceTimes.js';
+
+import * as MSS from '../src/index.js';
+import * as luxon from 'luxon';
+import { locations, moonPhases } from './referenceTimes.js';
+import { assert } from 'chai';
+import { describe } from 'mocha';
 
 // Reference source now rounds down. moment.diff truncates to integer, so by not
 // rounding here, the difference is the same it would be if we rounded down.
-MeeusSunMoon.options({roundToNearestMinute: false});
+MSS.options({ roundToNearestMinute: false });
 
 const maxError = 1;
 
-// Test that the correct times for moon phases are returned
-it('MoonPhases', function () {
-  const newMoons = MeeusSunMoon.yearMoonPhases(2016, 0);
-  const firstQuarterMoons = MeeusSunMoon.yearMoonPhases(2016, 1);
-  const fullMoons = MeeusSunMoon.yearMoonPhases(2016, 2);
-  const lastQuarterMoons = MeeusSunMoon.yearMoonPhases(2016, 3);
-  let phaseTime;
-  for (let i = 0; i < moonPhases.newMoon.length; i++) {
-    phaseTime = moment.tz(moonPhases.newMoon[i], 'UTC');
-    assert.ok(
-      Math.abs(newMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `New Moon: ${
-        newMoons[i].format('YYYY-MM-DD HH:mm')
-      }/${phaseTime.format('HH:mm')}`
-    );
-  }
-  for (let i = 0; i < moonPhases.firstQuarter.length; i++) {
-    phaseTime = moment.tz(moonPhases.firstQuarter[i], 'UTC');
-    assert.ok(
-      Math.abs(firstQuarterMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `First Quarter: ${
-        firstQuarterMoons[i].format('YYYY-MM-DD HH:mm')
-      }/${phaseTime.format('HH:mm')}`
-    );
-  }
-  for (let i = 0; i < moonPhases.fullMoon.length; i++) {
-    phaseTime = moment.tz(moonPhases.fullMoon[i], 'UTC');
-    assert.ok(
-      Math.abs(fullMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `Full Moon: ${
-        fullMoons[i].format('YYYY-MM-DD HH:mm')
-      }/${phaseTime.format('HH:mm')}`
-    );
-  }
-  for (let i = 0; i < moonPhases.lastQuarter.length; i++) {
-    phaseTime = moment.tz(moonPhases.lastQuarter[i], 'UTC');
-    assert.ok(
-      Math.abs(lastQuarterMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `Last Quarter: ${
-        lastQuarterMoons[i].format('YYYY-MM-DD HH:mm')
-      }/${phaseTime.format('HH:mm')}`
-    );
-  }
+describe('the moon phases calculation', () => {
+    [
+        { name: 'newMoon', phase: 0 },
+        { name: 'firstQuarter', phase: 1 },
+        { name: 'fullMoon', phase: 2 },
+        { name: 'lastQuarter', phase: 3 },
+    ].forEach(({ name, phase }) => {
+        describe(`for ${name}`, () => {
+            it('should return the correct time in UTC', () => {
+                const moonTimes = MSS.yearMoonPhases(2016, phase);
+                for (let i = 0; i < moonTimes.length; i++) {
+                    const refTime = dateTimeFromReferenceTime(moonPhases[name][i]);
+                    assert.isAtMost(Math.abs(moonTimes[i].diff(refTime).minutes), maxError,
+                        `${name}: ${moonTimes[i].toFormat('yyyy-MM-dd HH:mm')}/${refTime.toFormat('HH:mm')}`);
+                }
+            });
+
+            it('should return the correct time in a given timezone', () => {
+                const timezone = 'Pacific/Auckland';
+                const moonTimes = MSS.yearMoonPhases(2016, phase, timezone);
+                for (let i = 0; i < moonTimes.length; i++) {
+                    const refTime = dateTimeFromReferenceTime(moonPhases[name][i])
+                        .setZone(timezone);
+                    assert.isAtMost(Math.abs(moonTimes[i].diff(refTime).minutes), maxError,
+                        `${name}: ${moonTimes[i].toFormat('yyyy-MM-dd HH:mm ZZ')}/${refTime.toFormat('HH:mm ZZ')}`);
+                    assert.equal(moonTimes[i].toFormat('ZZ ZZZZZ'), refTime.toFormat('ZZ ZZZZZ'));
+                }
+            });
+        });
+    });
 });
 
-// Now test that it works for returning moon phases in local time:
-it('MoonPhases with Timezone', function () {
-  const timezone = 'Pacific/Auckland';
-  const newMoons = MeeusSunMoon.yearMoonPhases(2016, 0, timezone);
-  const firstQuarterMoons = MeeusSunMoon.yearMoonPhases(2016, 1, timezone);
-  const fullMoons = MeeusSunMoon.yearMoonPhases(2016, 2, timezone);
-  const lastQuarterMoons = MeeusSunMoon.yearMoonPhases(2016, 3, timezone);
-  let phaseTime;
-  for (let i = 0; i < moonPhases.newMoon.length; i++) {
-    phaseTime = moment.tz(moonPhases.newMoon[i], 'UTC');
-    phaseTime.tz(timezone);
-    assert.ok(
-      Math.abs(newMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `New Moon: ${
-        newMoons[i].format('YYYY-MM-DD HH:mm Z')
-      }/${phaseTime.format('HH:mm Z')}`
-    );
-  }
-  for (let i = 0; i < moonPhases.firstQuarter.length; i++) {
-    phaseTime = moment.tz(moonPhases.firstQuarter[i], 'UTC');
-    phaseTime.tz(timezone);
-    assert.ok(
-      Math.abs(firstQuarterMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `First Quarter: ${
-        firstQuarterMoons[i].format('YYYY-MM-DD HH:mm Z')
-      }/${phaseTime.format('HH:mm Z')}`
-    );
-  }
-  for (let i = 0; i < moonPhases.fullMoon.length; i++) {
-    phaseTime = moment.tz(moonPhases.fullMoon[i], 'UTC');
-    phaseTime.tz(timezone);
-    assert.ok(
-      Math.abs(fullMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `Full Moon: ${
-        fullMoons[i].format('YYYY-MM-DD HH:mm Z')
-      }/${phaseTime.format('HH:mm Z')}`
-    );
-  }
-  for (let i = 0; i < moonPhases.lastQuarter.length; i++) {
-    phaseTime = moment.tz(moonPhases.lastQuarter[i], 'UTC');
-    phaseTime.tz(timezone);
-    assert.ok(
-      Math.abs(
-        lastQuarterMoons[i].diff(phaseTime, 'minutes')) <= maxError,
-      `Last Quarter: ${
-        lastQuarterMoons[i].format('YYYY-MM-DD HH:mm Z')
-      }/${phaseTime.format('HH:mm Z')}`
-    );
-  }
+describe('the solar events calculations', () => {
+    locations.forEach(({ latitude, longitude, timezone, name, data }) => {
+        describe(`for ${name}`, () => {
+            it('should return the correct times for sunrise', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const sunrise = MSS.sunrise(date, latitude, longitude);
+                    const refSunrise = getRefEventTime(times[dataIndices.SUNRISE], timezone);
+                    assertCorrectTimeOrNoEventCode(date, sunrise, refSunrise);
+                });
+            });
+
+            it('should return the correct times for sunset', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const sunset = MSS.sunset(date, latitude, longitude);
+                    const refSunset = getRefEventTime(times[dataIndices.SUNSET], timezone);
+                    assertCorrectTimeOrNoEventCode(date, sunset, refSunset);
+                });
+            });
+
+            it('should return the correct times for solar noon', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const solarNoon = MSS.solarNoon(date, latitude, longitude);
+                    const refSolarNoon = getRefEventTime(times[dataIndices.SOLAR_NOON], timezone);
+                    assertCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
+                });
+            });
+
+            it('should return the correct times for civil dawn', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const civilDawn = MSS.civilDawn(date, latitude, longitude);
+                    const refCivilDawn = getRefEventTime(times[dataIndices.CIVIL_DAWN], timezone);
+                    assertCorrectTimeOrNoEventCode(date, civilDawn, refCivilDawn);
+                });
+            });
+
+            it('should return the correct times for civil dusk', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const civilDusk = MSS.civilDusk(date, latitude, longitude);
+                    const refCivilDusk = getRefEventTime(times[dataIndices.CIVIL_DUSK], timezone);
+                    assertCorrectTimeOrNoEventCode(date, civilDusk, refCivilDusk);
+                });
+            });
+
+            it('should return the correct times for nautical dawn', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const nauticalDawn = MSS.nauticalDawn(date, latitude, longitude);
+                    const refNauticalDawn = getRefEventTime(times[dataIndices.NAUTICAL_DAWN], timezone);
+                    assertCorrectTimeOrNoEventCode(date, nauticalDawn, refNauticalDawn);
+                });
+            });
+
+            it('should return the correct times for nautical dusk', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const nauticalDusk = MSS.nauticalDusk(date, latitude, longitude);
+                    const refNauticalDusk = getRefEventTime(times[dataIndices.NAUTICAL_DUSK], timezone);
+                    assertCorrectTimeOrNoEventCode(date, nauticalDusk, refNauticalDusk);
+                });
+            });
+
+            it('should return the correct times for astronomical dawn', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const astronomicalDawn = MSS.astronomicalDawn(date, latitude, longitude);
+                    const refAstronomicalDawn = getRefEventTime(times[dataIndices.ASTRONOMICAL_DAWN], timezone);
+                    assertCorrectTimeOrNoEventCode(date, astronomicalDawn, refAstronomicalDawn);
+                });
+            });
+
+            it('should return the correct times for astronomical dusk', () => {
+                data.forEach((times) => {
+                    const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+                    const astronomicalDusk = MSS.astronomicalDusk(date, latitude, longitude);
+                    const refAstronomicalDusk = getRefEventTime(times[dataIndices.ASTRONOMICAL_DUSK], timezone);
+                    assertCorrectTimeOrNoEventCode(date, astronomicalDusk, refAstronomicalDusk);
+                });
+            });
+        });
+    });
+
+    describe('when no event can be calculated', () => {
+        const latitude = -77.83333333;
+        const longitude = 166.6;
+        const dateSunHigh = luxon.DateTime.fromISO('2016-01-01T12:00:00', { zone: 'Pacific/Auckland' });
+        const dateSunLow = luxon.DateTime.fromISO('2016-07-01T12:00:00', { zone: 'Pacific/Auckland' });
+
+        const cases = [
+            { name: 'sunrise', method: MSS.sunrise, sunHigh: true, expectedTimeString: '07:00‡' },
+            { name: 'sunrise', method: MSS.sunrise, sunHigh: false, expectedTimeString: '06:00†' },
+            { name: 'sunset', method: MSS.sunset, sunHigh: true, expectedTimeString: '19:00‡' },
+            { name: 'sunset', method: MSS.sunset, sunHigh: false, expectedTimeString: '18:00†' },
+            { name: 'civil dawn', method: MSS.civilDawn, sunHigh: true, expectedTimeString: '06:30‡' },
+            { name: 'civil dawn', method: MSS.civilDawn, sunHigh: false, expectedTimeString: '05:30†' },
+            { name: 'civil dusk', method: MSS.civilDusk, sunHigh: true, expectedTimeString: '19:30‡' },
+            { name: 'civil dusk', method: MSS.civilDusk, sunHigh: false, expectedTimeString: '18:30†' },
+            { name: 'nautical dawn', method: MSS.nauticalDawn, sunHigh: true, expectedTimeString: '06:00‡' },
+            { name: 'nautical dusk', method: MSS.nauticalDusk, sunHigh: true, expectedTimeString: '20:00‡' },
+            { name: 'astronomical dawn', method: MSS.astronomicalDawn, sunHigh: true, expectedTimeString: '05:30‡' },
+            { name: 'astronomica dusk', method: MSS.astronomicalDusk, sunHigh: true, expectedTimeString: '20:30‡' },
+        ];
+
+        describe('and returnTimeForNoEventCase is false', () => {
+            cases.forEach(({ name, method, sunHigh }) => {
+                it(`${name} (sun ${sunHigh ? 'high' : 'low'})`, () => {
+                    MSS.options({ returnTimeForNoEventCase: false });
+                    const result = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude);
+                    assert.equal(result, sunHigh ? 'SUN_HIGH' : 'SUN_LOW');
+                });
+            });
+        });
+
+        describe('and returnTimeForNoEventCase is true', () => {
+            cases.forEach(({ name, method, sunHigh, expectedTimeString }) => {
+                it(`${name} (sun ${sunHigh ? 'high' : 'low'})`, () => {
+                    MSS.options({ returnTimeForNoEventCase: true });
+                    const result = MSS.formatCI(
+                        method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude), 'HH:mm');
+                    assert.equal(result, expectedTimeString);
+                });
+            });
+        });
+    });
 });
 
-// Test sunrise, solar noon, and trnsit times for a range of locations for all
-// of 2016
-for (const {name, data, timezone, latitude, longitude} of locations) {
-  it(`Sunrise/Solar Noon/Sunset:${
-    name
-  }`, function () {
-    this.timeout(50000); // eslint-disable-line no-invalid-this
-    for (let i = 0; i < data.length; i++) {
-      const date = moment.tz(data[i][0], timezone);
-      const sunrise = MeeusSunMoon.sunrise(date, latitude, longitude);
-      const transit = MeeusSunMoon.solarNoon(date, longitude);
-      const sunset = MeeusSunMoon.sunset(date, latitude, longitude);
-      const civilDawn = MeeusSunMoon.civilDawn(date, latitude, longitude);
-      const civilDusk = MeeusSunMoon.civilDusk(date, latitude, longitude);
-      const nauticalDawn = MeeusSunMoon.nauticalDawn(date, latitude, longitude);
-      const nauticalDusk = MeeusSunMoon.nauticalDusk(date, latitude, longitude);
-      const astronomicalDawn = MeeusSunMoon.astronomicalDawn(
-        date, latitude, longitude);
-      const astronomicalDusk = MeeusSunMoon.astronomicalDusk(
-        date, latitude, longitude);
-      let refSunrise, refSunset;
-      let refCivilDawn, refCivilDusk;
-      let refNauticalDawn, refNauticalDusk;
-      let refAstronomicalDawn, refAstronomicalDusk;
-      if (data[i][1].length === 16) {
-        refSunrise = moment.tz(data[i][1], timezone);
-      } else {
-        refSunrise = data[i][1];
-      }
-      if (data[i][2].length === 16) {
-        refSunset = moment.tz(data[i][2], timezone);
-      } else {
-        refSunset = data[i][2];
-      }
-      if (data[i][3].length === 16) {
-        refAstronomicalDawn = moment.tz(data[i][3], timezone);
-      } else {
-        refAstronomicalDawn = data[i][3];
-      }
-      if (data[i][4].length === 16) {
-        refAstronomicalDusk = moment.tz(data[i][4], timezone);
-      } else {
-        refAstronomicalDusk = data[i][4];
-      }
-      if (data[i][5].length === 16) {
-        refNauticalDawn = moment.tz(data[i][5], timezone);
-      } else {
-        refNauticalDawn = data[i][5];
-      }
-      if (data[i][6].length === 16) {
-        refNauticalDusk = moment.tz(data[i][6], timezone);
-      } else {
-        refNauticalDusk = data[i][6];
-      }
-      if (data[i][7].length === 16) {
-        refCivilDawn = moment.tz(data[i][7], timezone);
-      } else {
-        refCivilDawn = data[i][7];
-      }
-      if (data[i][8].length === 16) {
-        refCivilDusk = moment.tz(data[i][8], timezone);
-      } else {
-        refCivilDusk = data[i][8];
-      }
-      const refTransit = moment.tz(data[i][9], timezone);
-      // Sunrise & Sunset
-      if (refSunrise === 'MS' || refSunrise === 'PN') {
-        assert.ok(
-          sunrise === refSunrise,
-          `${name} - Sunrise ${
-            date.format('YYYY-MM-DD')
-          } ${sunrise}/${refSunrise}`
-        );
-      } else if (refSunrise === '') {
-        assert.ok(true,
-          `${name} - Sunrise ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(sunrise.diff(refSunrise, 'minutes')) <= maxError,
-          `${name} - Sunrise ${
-            date.format('YYYY-MM-DD')
-          } ${sunrise.format('HH:mm')}/${refSunrise.format('HH:mm')}`
-        );
-      }
-      if (refSunset === 'MS' || refSunset === 'PN') {
-        assert.ok(
-          sunset === refSunset,
-          `${name} - Sunset ${
-            date.format('YYYY-MM-DD')
-          } ${sunset}/${refSunset}`
-        );
-      } else if (refSunset === '') {
-        assert.ok(true,
-          `${name} - Sunset ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(sunset.diff(refSunset, 'minutes')) <= maxError,
-          `${name} - Sunset ${
-            date.format('YYYY-MM-DD')
-          } ${sunset.format('HH:mm')}/${refSunset.format('HH:mm')}`
-        );
-      }
-      // Civil Dawn & Dusk
-      if (refCivilDawn === 'NCD') {
-        assert.ok(
-          civilDawn === refCivilDawn,
-          `${name} - Civil Dawn ${
-            date.format('YYYY-MM-DD')
-          } ${civilDawn}/${refCivilDawn}`
-        );
-      } else if (refCivilDawn === '') {
-        assert.ok(true,
-          `${name} - Civil Dawn ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(civilDawn.diff(refCivilDawn, 'minutes')) <= maxError,
-          `${name} - Civil Dawn ${
-            date.format('YYYY-MM-DD')
-          } ${civilDawn.format('HH:mm')}/${refCivilDawn.format('HH:mm')}`
-        );
-      }
-      if (refCivilDusk === 'NCD') {
-        assert.ok(
-          civilDusk === refCivilDusk,
-          `${name} - Civil Dusk ${
-            date.format('YYYY-MM-DD')
-          } ${civilDusk}/${refCivilDusk}`
-        );
-      } else if (refCivilDusk === '') {
-        assert.ok(true,
-          `${name} - Civil Dusk ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(civilDusk.diff(refCivilDusk, 'minutes')) <= maxError,
-          `${name} - Civil Dusk ${
-            date.format('YYYY-MM-DD')
-          } ${civilDusk.format('HH:mm')}/${refCivilDusk.format('HH:mm')}`
-        );
-      }
-      // Nautical Dawn & Dusk
-      if (refNauticalDawn === 'NND') {
-        assert.ok(
-          nauticalDawn === refNauticalDawn,
-          `${name} - Nautical Dawn ${
-            date.format('YYYY-MM-DD')
-          } ${nauticalDawn}/${refNauticalDawn}`
-        );
-      } else if (refNauticalDawn === '') {
-        assert.ok(true,
-          `${name} - Nautical Dawn ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(nauticalDawn.diff(refNauticalDawn, 'minutes')) <= maxError,
-          `${name} - Nautical Dawn ${
-            date.format('YYYY-MM-DD')
-          } ${nauticalDawn.format('HH:mm')}/${refNauticalDawn.format('HH:mm')}`
-        );
-      }
-      if (refNauticalDusk === 'NND') {
-        assert.ok(
-          nauticalDusk === refNauticalDusk,
-          `${name} - Nautical Dusk ${
-            date.format('YYYY-MM-DD')
-          } ${nauticalDusk}/${refNauticalDusk}`
-        );
-      } else if (refNauticalDusk === '') {
-        assert.ok(true,
-          `${name} - Nautical Dusk ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(nauticalDusk.diff(refNauticalDusk, 'minutes')) <= maxError,
-          `${name} - Nautical Dusk ${
-            date.format('YYYY-MM-DD')
-          } ${nauticalDusk.format('HH:mm')}/${refNauticalDusk.format('HH:mm')}`
-        );
-      }
-      // Astronomical Dawn & Dusk
-      if (refAstronomicalDawn === 'NAD') {
-        assert.ok(
-          astronomicalDawn === refAstronomicalDawn,
-          `${name} - Astronomical Dawn ${
-            date.format('YYYY-MM-DD')
-          } ${astronomicalDawn}/${refAstronomicalDawn}`
-        );
-      } else if (refAstronomicalDawn === '') {
-        assert.ok(true,
-          `${name} - Astronomical Dawn ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(astronomicalDawn.diff(
-            refAstronomicalDawn, 'minutes')) <= maxError,
-          `${name} - Astronomical Dawn ${
-            date.format('YYYY-MM-DD')
-          } ${astronomicalDawn.format('HH:mm')}/${
-            refAstronomicalDawn.format('HH:mm')}`
-        );
-      }
-      if (refAstronomicalDusk === 'NAD') {
-        assert.ok(
-          astronomicalDusk === refAstronomicalDusk,
-          `${name} - Astronomical Dusk ${
-            date.format('YYYY-MM-DD')
-          } ${astronomicalDusk}/${refAstronomicalDusk}`
-        );
-      } else if (refAstronomicalDusk === '') {
-        assert.ok(true,
-          `${name} - Astronomical Dusk ${date.format('YYYY-MM-DD')} skipped.`);
-      } else {
-        assert.ok(
-          Math.abs(astronomicalDusk.diff(
-            refAstronomicalDusk, 'minutes')) <= maxError,
-          `${name} - Astronomical Dusk ${
-            date.format('YYYY-MM-DD')
-          } ${astronomicalDusk.format('HH:mm')}/${
-            refAstronomicalDusk.format('HH:mm')}`
-        );
-      }
-      assert.ok(
-        Math.abs(transit.diff(refTransit, 'minutes')) <= maxError,
-        `${name} - Solar Noon ${
-          date.format('YYYY-MM-DD')
-        } ${transit.format('HH:mm')}/${refTransit.format('HH:mm')}`
-      );
+const dataIndices = {
+    ASTRONOMICAL_DAWN: 3,
+    ASTRONOMICAL_DUSK: 4,
+    CIVIL_DAWN: 7,
+    CIVIL_DUSK: 8,
+    DATE: 0,
+    NAUTICAL_DAWN: 5,
+    NAUTICAL_DUSK: 6,
+    SOLAR_NOON: 9,
+    SUNRISE: 1,
+    SUNSET: 2,
+};
+
+const dateTimeFromReferenceTime = (referenceTime, timezone = 'UTC') => {
+    return luxon.DateTime.fromFormat(referenceTime, 'yyyy-MM-dd HH:mm', { zone: timezone });
+};
+
+const assertCorrectTimeOrNoEventCode = (date, eventTime, refEventTime) => {
+    if (refEventTime === '') {
+        assert.isTrue(true, `${date.toFormat('yyyy-MM-dd')} skipped.`);
+    } else if (typeof eventTime === 'string') {
+        assert.strictEqual(eventTime, refEventTime, `${date.toFormat('yyyy-MM-dd')} ${eventTime}/${refEventTime}`);
+    } else {
+        assert.isAtMost(Math.abs(eventTime.diff(refEventTime).minutes), maxError,
+            `${date.toFormat('yyyy-MM-dd')} ${eventTime.toFormat('HH:mm')}/${refEventTime.toFormat('HH:mm')}`);
     }
-  });
-}
+};
 
-// const dateFormatKeys = {'**': '‡', '--': '†'};
-it('No Event Cases', function () {
-  const datePN = moment.tz('2016-07-01 12:00', 'Antarctica/McMurdo');
-  const dateMS = moment.tz('2016-01-01 12:00', 'Antarctica/McMurdo');
-  let sunrisePN = MeeusSunMoon.sunrise(datePN, -77.83333333, 166.6);
-  let sunsetPN = MeeusSunMoon.sunset(datePN, -77.83333333, 166.6);
-  let sunriseMS = MeeusSunMoon.sunrise(dateMS, -77.83333333, 166.6);
-  let sunsetMS = MeeusSunMoon.sunset(dateMS, -77.83333333, 166.6);
-  let civilDawn = MeeusSunMoon.civilDawn(dateMS, -77.83333333, 166.6);
-  let civilDusk = MeeusSunMoon.civilDusk(dateMS, -77.83333333, 166.6);
-  let nauticalDawn = MeeusSunMoon.nauticalDawn(dateMS, -77.83333333, 166.6);
-  let nauticalDusk = MeeusSunMoon.nauticalDusk(dateMS, -77.83333333, 166.6);
-  let astronomicalDawn = MeeusSunMoon.astronomicalDawn(
-    dateMS, -77.83333333, 166.6);
-  let astronomicalDusk = MeeusSunMoon.astronomicalDusk(
-    dateMS, -77.83333333, 166.6);
-  assert.ok(sunrisePN === 'PN', `${sunrisePN}/PN`);
-  assert.ok(sunsetPN === 'PN', `${sunsetPN}/PN`);
-  assert.ok(sunriseMS === 'MS', `${sunriseMS}/MS`);
-  assert.ok(sunsetMS === 'MS', `${sunsetMS}/MS`);
-  assert.ok(civilDawn === 'NCD', `${civilDawn}/NCD`);
-  assert.ok(civilDusk === 'NCD', `${civilDusk}/NCD`);
-  assert.ok(nauticalDawn === 'NND', `${nauticalDawn}/NND`);
-  assert.ok(nauticalDusk === 'NND', `${nauticalDusk}/NND`);
-  assert.ok(astronomicalDawn === 'NAD', `${astronomicalDawn}/NAD`);
-  assert.ok(astronomicalDusk === 'NAD', `${astronomicalDusk}/NAD`);
-  MeeusSunMoon.options({returnTimeForPNMS: true});
-  sunrisePN = MeeusSunMoon.formatCI(
-    MeeusSunMoon.sunrise(datePN, -77.83333333, 166.6), 'HH:mm');
-  sunsetPN = MeeusSunMoon.formatCI(
-    MeeusSunMoon.sunset(datePN, -77.83333333, 166.6), 'HH:mm');
-  sunriseMS = MeeusSunMoon.formatCI(
-    MeeusSunMoon.sunrise(dateMS, -77.83333333, 166.6), 'HH:mm');
-  sunsetMS = MeeusSunMoon.formatCI(
-    MeeusSunMoon.sunset(dateMS, -77.83333333, 166.6), 'HH:mm');
-  civilDawn = MeeusSunMoon.formatCI(
-    MeeusSunMoon.civilDawn(dateMS, -77.83333333, 166.6), 'HH:mm');
-  civilDusk = MeeusSunMoon.formatCI(
-    MeeusSunMoon.civilDusk(dateMS, -77.83333333, 166.6), 'HH:mm');
-  nauticalDawn = MeeusSunMoon.formatCI(
-    MeeusSunMoon.nauticalDawn(dateMS, -77.83333333, 166.6), 'HH:mm');
-  nauticalDusk = MeeusSunMoon.formatCI(
-    MeeusSunMoon.nauticalDusk(dateMS, -77.83333333, 166.6), 'HH:mm');
-  astronomicalDawn = MeeusSunMoon.formatCI(
-    MeeusSunMoon.astronomicalDawn(dateMS, -77.83333333, 166.6), 'HH:mm');
-  astronomicalDusk = MeeusSunMoon.formatCI(
-    MeeusSunMoon.astronomicalDusk(dateMS, -77.83333333, 166.6), 'HH:mm');
-  assert.ok(sunrisePN === '06:00†', `${sunrisePN}/06:00†`);
-  assert.ok(sunsetPN === '18:00†', `${sunsetPN}/18:00†`);
-  assert.ok(sunriseMS === '07:00‡', `${sunriseMS}/07:00‡`);
-  assert.ok(sunsetMS === '19:00‡', `${sunsetMS}/19:00‡`);
-  assert.ok(civilDawn === '06:30‡', `${civilDawn}/06:30‡`);
-  assert.ok(civilDusk === '19:30‡', `${civilDusk}/19:30‡`);
-  assert.ok(nauticalDawn === '06:00‡', `${nauticalDawn}/06:00‡`);
-  assert.ok(nauticalDusk === '20:00‡', `${nauticalDusk}/20:00‡`);
-  assert.ok(astronomicalDawn === '05:30‡', `${astronomicalDawn}/05:30‡`);
-  assert.ok(astronomicalDusk === '20:30‡', `${astronomicalDusk}/20:30‡`);
-});
+const getRefEventTime = (entry, timezone) => {
+    if (entry[0] === '2') {
+        return dateTimeFromReferenceTime(entry, timezone);
+    }
+    return entry.replace('ASTRO', 'ASTRONOMICAL');
+};
