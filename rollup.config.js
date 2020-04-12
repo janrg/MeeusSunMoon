@@ -2,7 +2,8 @@ import babel from 'rollup-plugin-babel';
 import { terser } from 'rollup-plugin-terser';
 
 const copyrightNotice = `/**
- * @license MeeusSunMoon v3.0.0\n * (c) 2018 Jan Greis
+ * @license MeeusSunMoon v3.0.0
+ * (c) 2018 Jan Greis
  * licensed under MIT
  */
 `;
@@ -23,6 +24,7 @@ function rollupConfig (minify, format) {
             }${minify ? '.min' : ''}.js`,
             format,
             name: 'MeeusSunMoon',
+            globals: format === 'es' ? {} : { luxon: 'luxon' },
         },
         plugins: [],
     };

@@ -3,8 +3,6 @@
 import * as MSS from '../src/index.js';
 import * as luxon from 'luxon';
 import { locations, moonPhases } from './referenceTimes.js';
-import { assert } from 'chai';
-import { describe } from 'mocha';
 
 // Reference source now rounds down. moment.diff truncates to integer, so by not
 // rounding here, the difference is the same it would be if we rounded down.
@@ -24,8 +22,7 @@ describe('the moon phases calculation', () => {
                 const moonTimes = MSS.yearMoonPhases(2016, phase);
                 for (let i = 0; i < moonTimes.length; i++) {
                     const refTime = dateTimeFromReferenceTime(moonPhases[name][i]);
-                    assert.isAtMost(Math.abs(moonTimes[i].diff(refTime).minutes), maxError,
-                        `${name}: ${moonTimes[i].toFormat('yyyy-MM-dd HH:mm')}/${refTime.toFormat('HH:mm')}`);
+                    expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
                 }
             });
 
@@ -35,9 +32,8 @@ describe('the moon phases calculation', () => {
                 for (let i = 0; i < moonTimes.length; i++) {
                     const refTime = dateTimeFromReferenceTime(moonPhases[name][i])
                         .setZone(timezone);
-                    assert.isAtMost(Math.abs(moonTimes[i].diff(refTime).minutes), maxError,
-                        `${name}: ${moonTimes[i].toFormat('yyyy-MM-dd HH:mm ZZ')}/${refTime.toFormat('HH:mm ZZ')}`);
-                    assert.equal(moonTimes[i].toFormat('ZZ ZZZZZ'), refTime.toFormat('ZZ ZZZZZ'));
+                    expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
+                    expect(moonTimes[i].toFormat('ZZ ZZZZZ')).toEqual(refTime.toFormat('ZZ ZZZZZ'));
                 }
             });
         });
@@ -52,7 +48,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const sunrise = MSS.sunrise(date, latitude, longitude);
                     const refSunrise = getRefEventTime(times[dataIndices.SUNRISE], timezone);
-                    assertCorrectTimeOrNoEventCode(date, sunrise, refSunrise);
+                    expectCorrectTimeOrNoEventCode(date, sunrise, refSunrise);
                 });
             });
 
@@ -61,7 +57,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const sunset = MSS.sunset(date, latitude, longitude);
                     const refSunset = getRefEventTime(times[dataIndices.SUNSET], timezone);
-                    assertCorrectTimeOrNoEventCode(date, sunset, refSunset);
+                    expectCorrectTimeOrNoEventCode(date, sunset, refSunset);
                 });
             });
 
@@ -70,7 +66,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const solarNoon = MSS.solarNoon(date, latitude, longitude);
                     const refSolarNoon = getRefEventTime(times[dataIndices.SOLAR_NOON], timezone);
-                    assertCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
+                    expectCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
                 });
             });
 
@@ -79,7 +75,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const civilDawn = MSS.civilDawn(date, latitude, longitude);
                     const refCivilDawn = getRefEventTime(times[dataIndices.CIVIL_DAWN], timezone);
-                    assertCorrectTimeOrNoEventCode(date, civilDawn, refCivilDawn);
+                    expectCorrectTimeOrNoEventCode(date, civilDawn, refCivilDawn);
                 });
             });
 
@@ -88,7 +84,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const civilDusk = MSS.civilDusk(date, latitude, longitude);
                     const refCivilDusk = getRefEventTime(times[dataIndices.CIVIL_DUSK], timezone);
-                    assertCorrectTimeOrNoEventCode(date, civilDusk, refCivilDusk);
+                    expectCorrectTimeOrNoEventCode(date, civilDusk, refCivilDusk);
                 });
             });
 
@@ -97,7 +93,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const nauticalDawn = MSS.nauticalDawn(date, latitude, longitude);
                     const refNauticalDawn = getRefEventTime(times[dataIndices.NAUTICAL_DAWN], timezone);
-                    assertCorrectTimeOrNoEventCode(date, nauticalDawn, refNauticalDawn);
+                    expectCorrectTimeOrNoEventCode(date, nauticalDawn, refNauticalDawn);
                 });
             });
 
@@ -106,7 +102,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const nauticalDusk = MSS.nauticalDusk(date, latitude, longitude);
                     const refNauticalDusk = getRefEventTime(times[dataIndices.NAUTICAL_DUSK], timezone);
-                    assertCorrectTimeOrNoEventCode(date, nauticalDusk, refNauticalDusk);
+                    expectCorrectTimeOrNoEventCode(date, nauticalDusk, refNauticalDusk);
                 });
             });
 
@@ -115,7 +111,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const astronomicalDawn = MSS.astronomicalDawn(date, latitude, longitude);
                     const refAstronomicalDawn = getRefEventTime(times[dataIndices.ASTRONOMICAL_DAWN], timezone);
-                    assertCorrectTimeOrNoEventCode(date, astronomicalDawn, refAstronomicalDawn);
+                    expectCorrectTimeOrNoEventCode(date, astronomicalDawn, refAstronomicalDawn);
                 });
             });
 
@@ -124,7 +120,7 @@ describe('the solar events calculations', () => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
                     const astronomicalDusk = MSS.astronomicalDusk(date, latitude, longitude);
                     const refAstronomicalDusk = getRefEventTime(times[dataIndices.ASTRONOMICAL_DUSK], timezone);
-                    assertCorrectTimeOrNoEventCode(date, astronomicalDusk, refAstronomicalDusk);
+                    expectCorrectTimeOrNoEventCode(date, astronomicalDusk, refAstronomicalDusk);
                 });
             });
         });
@@ -156,7 +152,7 @@ describe('the solar events calculations', () => {
                 it(`${name} (sun ${sunHigh ? 'high' : 'low'})`, () => {
                     MSS.options({ returnTimeForNoEventCase: false });
                     const result = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude);
-                    assert.equal(result, sunHigh ? 'SUN_HIGH' : 'SUN_LOW');
+                    expect(result).toEqual(sunHigh ? 'SUN_HIGH' : 'SUN_LOW');
                 });
             });
         });
@@ -167,7 +163,7 @@ describe('the solar events calculations', () => {
                     MSS.options({ returnTimeForNoEventCase: true });
                     const result = MSS.formatCI(
                         method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude), 'HH:mm');
-                    assert.equal(result, expectedTimeString);
+                    expect(result).toEqual(expectedTimeString);
                 });
             });
         });
@@ -191,14 +187,13 @@ const dateTimeFromReferenceTime = (referenceTime, timezone = 'UTC') => {
     return luxon.DateTime.fromFormat(referenceTime, 'yyyy-MM-dd HH:mm', { zone: timezone });
 };
 
-const assertCorrectTimeOrNoEventCode = (date, eventTime, refEventTime) => {
+const expectCorrectTimeOrNoEventCode = (date, eventTime, refEventTime) => {
+    // eslint-disable-next-line no-empty
     if (refEventTime === '') {
-        assert.isTrue(true, `${date.toFormat('yyyy-MM-dd')} skipped.`);
     } else if (typeof eventTime === 'string') {
-        assert.strictEqual(eventTime, refEventTime, `${date.toFormat('yyyy-MM-dd')} ${eventTime}/${refEventTime}`);
+        expect(eventTime).toEqual(refEventTime);
     } else {
-        assert.isAtMost(Math.abs(eventTime.diff(refEventTime).minutes), maxError,
-            `${date.toFormat('yyyy-MM-dd')} ${eventTime.toFormat('HH:mm')}/${refEventTime.toFormat('HH:mm')}`);
+        expect(Math.abs(eventTime.diff(refEventTime).minutes)).toBeLessThanOrEqual(maxError);
     }
 };
 

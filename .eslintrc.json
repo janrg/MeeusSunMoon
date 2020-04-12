@@ -82,14 +82,10 @@
         "wrap-regex": "error"
     },
     "overrides": [{
-      "env": {"mocha": true},
-      "files": "test/**",
-      "globals": {
-          "assert": true
-      }
+      "env": {"jest": true},
+      "files": "test/**"
     }],
     "globals": {
-        "moment": false,
         "luxon": false
     }
 }

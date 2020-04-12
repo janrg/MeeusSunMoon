@@ -8,15 +8,10 @@
     "test": "test"
   },
   "scripts": {
-    "start": "static -p 8049",
-    "coverage": "open-cli http://localhost:8049/coverage/ && npm start",
     "eslint": "eslint .",
     "rollup": "rollup -c",
-    "mocha": "_mocha --timeout 10000 test/tests.js --delay --require esm",
-    "browser-test": "open-cli http://localhost:8049/test/ && npm start",
-    "node-test": "npm run eslint && npm run rollup && npm run mocha",
-    "test-cov": "npm run eslint && npm run rollup && rm -Rf node_modules/.cache && nyc npm run mocha",
-    "test": "npm run node-test"
+    "test": "jest",
+    "build": "npm run eslint && npm run test && npm run rollup"
   },
   "nyc": {
     "reporter": [
@@ -28,8 +23,7 @@
     ]
   },
   "dependencies": {
-    "luxon": "^1.23.0",
-    "reify": "^0.20.12"
+    "luxon": "^1.23.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -37,18 +31,13 @@
     "@babel/node": "^7.8.7",
     "@babel/preset-env": "^7.9.5",
     "babel-eslint": "^10.1.0",
-    "chai": "^4.2.0",
     "eslint": "6.8.0",
     "eslint-config-standard": "14.1.1",
     "eslint-plugin-import": "2.20.2",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-standard": "4.0.1",
-    "esm": "^3.2.25",
-    "mocha": "^7.1.1",
-    "node-static": "0.7.11",
-    "nyc": "^15.0.1",
-    "open-cli": "^6.0.1",
+    "jest": "^25.3.0",
     "rollup": "2.6.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-terser": "^5.3.0"
