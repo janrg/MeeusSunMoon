@@ -15,7 +15,7 @@ let dateFormatKeys = {
  * module.
  * @param {object} options Options to be set.
  */
-const options = function (options) {
+const options = (options) => {
     if (typeof options.roundToNearestMinute === 'boolean') {
         roundToNearestMinute = options.roundToNearestMinute;
     }
@@ -34,7 +34,7 @@ const options = function (options) {
  * @param {string} formatString Valid DateTime format string.
  * @returns {string} Formatted string with marker appended.
  */
-const formatCI = function (datetime, formatString) {
+const formatCI = (datetime, formatString) => {
     const noEventCode = datetime.errorCode;
     let datestring = datetime.toFormat(formatString);
     if (dateFormatKeys[noEventCode]) {
@@ -54,7 +54,7 @@ const formatCI = function (datetime, formatString) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const sunrise = function (datetime, phi, L) {
+const sunrise = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE');
     } catch (err) {
@@ -73,7 +73,7 @@ const sunrise = function (datetime, phi, L) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const sunset = function (datetime, phi, L) {
+const sunset = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET');
     } catch (err) {
@@ -92,7 +92,7 @@ const sunset = function (datetime, phi, L) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const civilDawn = function (datetime, phi, L) {
+const civilDawn = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE', 6);
     } catch (err) {
@@ -111,7 +111,7 @@ const civilDawn = function (datetime, phi, L) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const civilDusk = function (datetime, phi, L) {
+const civilDusk = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET', 6);
     } catch (err) {
@@ -130,7 +130,7 @@ const civilDusk = function (datetime, phi, L) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const nauticalDawn = function (datetime, phi, L) {
+const nauticalDawn = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE', 12);
     } catch (err) {
@@ -149,7 +149,7 @@ const nauticalDawn = function (datetime, phi, L) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const nauticalDusk = function (datetime, phi, L) {
+const nauticalDusk = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET', 12);
     } catch (err) {
@@ -168,7 +168,7 @@ const nauticalDusk = function (datetime, phi, L) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const astronomicalDawn = function (datetime, phi, L) {
+const astronomicalDawn = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE', 18);
     } catch (err) {
@@ -187,7 +187,7 @@ const astronomicalDawn = function (datetime, phi, L) {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const astronomicalDusk = function (datetime, phi, L) {
+const astronomicalDusk = (datetime, phi, L) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET', 18);
     } catch (err) {
@@ -203,9 +203,7 @@ const astronomicalDusk = function (datetime, phi, L) {
  * @param {number} L longitude of target location.
  * @returns {DateTime} Time of solar noon at the given longitude.
  */
-const solarNoon = function (datetime, L) {
-    return sunTransit(datetime, L);
-};
+const solarNoon = (datetime, L) => sunTransit(datetime, L);
 
 /**
  * Calculates all moons of the given phase that occur within the given
@@ -216,7 +214,7 @@ const solarNoon = function (datetime, L) {
  * @param {string} timezone Optional: IANA timezone string.
  * @returns {array} Array of moment objects for moons of the given phase.
  */
-const yearMoonPhases = function (year, phase, timezone = 'UTC') {
+const yearMoonPhases = (year, phase, timezone = 'UTC') => {
     const yearBegin = luxon.DateTime.fromObject(
         // eslint-disable-next-line sort-keys
         { year, month: 1, day: 1, hour: 0, minute: 0, second: 0, zone: timezone });

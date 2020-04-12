@@ -13,7 +13,7 @@ const copyrightNotice = `/**
  * @param {'umd'|'es'} format Rollup output format
  * @returns {object} Individual Rollup config object
  */
-function rollupConfig (minify, format) {
+const rollupConfig = (minify, format) => {
     const config = {
         external: ['luxon'],
         input: 'src/index.js',
@@ -36,7 +36,7 @@ function rollupConfig (minify, format) {
         config.output.sourcemap = true;
     }
     return config;
-}
+};
 
 export default [
     rollupConfig(false, 'umd'),

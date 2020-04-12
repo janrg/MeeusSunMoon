@@ -1,5 +1,5 @@
-import * as auxMath from './auxMath.js';
-import * as timeConversions from './timeConversions.js';
+import { cosd, sind } from './auxMath';
+import { kToT } from './timeConversions';
 
 /**
  * Calculates the Julian date in ephemeris time of the moon near the date
@@ -10,9 +10,9 @@ import * as timeConversions from './timeConversions.js';
  *                    2 -> full moon, 3 -> last quarter.
  * @returns {number} Julian date in ephemeris time of the moon of given phase.
  */
-const truePhase = function (k, phase) {
+const truePhase = (k, phase) => {
     k += phase / 4;
-    const T = timeConversions.kToT(k);
+    const T = kToT(k);
     const E = eccentricityCorrection(T);
     const JDE = meanPhase(T, k);
     const M = sunMeanAnomaly(T, k);
@@ -40,10 +40,8 @@ const truePhase = function (k, phase) {
  * @returns {number} Julian date in ephemeris time of the moon of given mean
  *     phase.
  */
-const meanPhase = function (T, k) {
-    return 2451550.09766 + 29.530588861 * k + 0.00015437 * T * T - 0.000000150 * T * T * T +
-        0.00000000073 * T * T * T * T;
-};
+const meanPhase = (T, k) => 2451550.09766 + 29.530588861 * k + 0.00015437 * T ** 2 - 0.000000150 * T ** 3 +
+        0.00000000073 * T ** 4;
 
 /**
  * Calculates the mean anomaly of the sun (see AA p350 Eq49.4).
@@ -53,9 +51,7 @@ const meanPhase = function (T, k) {
  *     2000-01-06.
  * @returns {number} Mean anomaly of the sun at the given time.
  */
-const sunMeanAnomaly = function (T, k) {
-    return 2.5534 + 29.10535670 * k - 0.0000014 * T * T - 0.00000011 * T * T * T;
-};
+const sunMeanAnomaly = (T, k) => 2.5534 + 29.10535670 * k - 0.0000014 * T ** 2 - 0.00000011 * T ** 3;
 
 /**
  * Calculates the mean anomaly of the moon (see AA p350 Eq49.5).
@@ -65,9 +61,8 @@ const sunMeanAnomaly = function (T, k) {
  *     2000-01-06.
  * @returns {number} Mean anomaly of the moon at the given time.
  */
-const moonMeanAnomaly = function (T, k) {
-    return 201.5643 + 385.81693528 * k + 0.0107582 * T * T + 0.00001238 * T * T * T - 0.000000058 * T * T * T * T;
-};
+const moonMeanAnomaly = (T, k) => 201.5643 + 385.81693528 * k + 0.0107582 * T ** 2 + 0.00001238 * T ** 3 -
+    0.000000058 * T ** 4;
 
 /**
  * Calculates the argument of latitude of the moon (see AA p350 Eq49.6).
@@ -77,9 +72,8 @@ const moonMeanAnomaly = function (T, k) {
  *     2000-01-06.
  * @returns {number} Argument of latitude of the moon at the given time.
  */
-const moonArgumentOfLatitude = function (T, k) {
-    return 160.7108 + 390.67050284 * k - 0.0016118 * T * T - 0.00000227 * T * T * T + 0.000000011 * T * T * T * T;
-};
+const moonArgumentOfLatitude = (T, k) => 160.7108 + 390.67050284 * k - 0.0016118 * T ** 2 - 0.00000227 * T ** 3 +
+    0.000000011 * T ** 4;
 
 /**
  * Calculates the longitude of the ascending node of the lunar orbit (see AA
@@ -91,9 +85,7 @@ const moonArgumentOfLatitude = function (T, k) {
  * @returns {number} Longitude of the ascending node of the lunar orbit at the
  *     given time.
  */
-const moonAscendingNodeLongitude = function (T, k) {
-    return 124.7746 - 1.56375588 * k + 0.0020672 * T * T + 0.00000215 * T * T * T;
-};
+const moonAscendingNodeLongitude = (T, k) => 124.7746 - 1.56375588 * k + 0.0020672 * T ** 2 + 0.00000215 * T ** 3;
 
 /**
  * Calculates the correction for the eccentricity of the earth's orbit.
@@ -101,9 +93,7 @@ const moonAscendingNodeLongitude = function (T, k) {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Eccentricity correction.
  */
-const eccentricityCorrection = function (T) {
-    return 1 - 0.002516 * T - 0.0000074 * T * T;
-};
+const eccentricityCorrection = (T) => 1 - 0.002516 * T - 0.0000074 * T ** 2;
 
 /**
  * Calculates the planetary arguments for the moon phases (see AA p351).
@@ -113,26 +103,22 @@ const eccentricityCorrection = function (T) {
  *     2000-01-06.
  * @returns {array} Planetary arguments for the moon phases.
  */
-const planetaryArguments = function (T, k) {
-    // Want to follow the numbering conventions from AA
-    return [
-        0,
-        299.77 + 0.107408 * k - 0.009173 * T * T,
-        251.88 + 0.016321 * k,
-        251.83 + 26.651886 * k,
-        349.42 + 36.412478 * k,
-        84.66 + 18.206239 * k,
-        141.74 + 53.303771 * k,
-        207.14 + 2.453732 * k,
-        154.84 + 7.306860 * k,
-        34.52 + 27.261239 * k,
-        207.19 + 0.121824 * k,
-        291.34 + 1.844379 * k,
-        161.72 + 24.198154 * k,
-        239.56 + 25.513099 * k,
-        331.55 + 3.592518 * k,
-    ];
-};
+const planetaryArguments = (T, k) => [
+    0,
+    299.77 + 0.107408 * k - 0.009173 * T ** 2,
+    251.88 + 0.016321 * k,
+    251.83 + 26.651886 * k,
+    349.42 + 36.412478 * k,
+    84.66 + 18.206239 * k,
+    141.74 + 53.303771 * k,
+    207.14 + 2.453732 * k,
+    154.84 + 7.306860 * k,
+    34.52 + 27.261239 * k,
+    207.19 + 0.121824 * k,
+    291.34 + 1.844379 * k,
+    161.72 + 24.198154 * k,
+    239.56 + 25.513099 * k,
+    331.55 + 3.592518 * k];
 
 /**
  * Calculates the corrections to the planetary arguments for the moon phases
@@ -141,22 +127,10 @@ const planetaryArguments = function (T, k) {
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const commonCorrections = function (A) {
-    return 0.000325 * auxMath.sind(A[1]) +
-        0.000165 * auxMath.sind(A[2]) +
-        0.000164 * auxMath.sind(A[3]) +
-        0.000126 * auxMath.sind(A[4]) +
-        0.000110 * auxMath.sind(A[5]) +
-        0.000062 * auxMath.sind(A[6]) +
-        0.000060 * auxMath.sind(A[7]) +
-        0.000056 * auxMath.sind(A[8]) +
-        0.000047 * auxMath.sind(A[9]) +
-        0.000042 * auxMath.sind(A[10]) +
-        0.000040 * auxMath.sind(A[11]) +
-        0.000037 * auxMath.sind(A[12]) +
-        0.000035 * auxMath.sind(A[13]) +
-        0.000023 * auxMath.sind(A[14]);
-};
+const commonCorrections = (A) => 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) + 0.000164 * sind(A[3]) +
+    0.000126 * sind(A[4]) + 0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) + 0.000060 * sind(A[7]) +
+    0.000056 * sind(A[8]) + 0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) + 0.000040 * sind(A[11]) +
+    0.000037 * sind(A[12]) + 0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
 
 /**
  * Calculates the corrections to the planetary arguments for the moon phases
@@ -171,44 +145,44 @@ const commonCorrections = function (A) {
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const newMoonFullMoonCorrections = function (E, M, MPrime, F, Omega, phase) {
+const newMoonFullMoonCorrections = (E, M, MPrime, F, Omega, phase) => {
     let DeltaJDE =
-        -0.00111 * auxMath.sind(MPrime - 2 * F) -
-        0.00057 * auxMath.sind(MPrime + 2 * F) +
-        0.00056 * E * auxMath.sind(2 * MPrime + M) -
-        0.00042 * auxMath.sind(3 * MPrime) +
-        0.00042 * E * auxMath.sind(M + 2 * F) +
-        0.00038 * E * auxMath.sind(M - 2 * F) -
-        0.00024 * E * auxMath.sind(2 * MPrime - M) -
-        0.00017 * auxMath.sind(Omega) -
-        0.00007 * auxMath.sind(MPrime + 2 * M) +
-        0.00004 * auxMath.sind(2 * MPrime - 2 * F) +
-        0.00004 * auxMath.sind(3 * M) +
-        0.00003 * auxMath.sind(MPrime + M - 2 * F) +
-        0.00003 * auxMath.sind(2 * MPrime + 2 * F) -
-        0.00003 * auxMath.sind(MPrime + M + 2 * F) +
-        0.00003 * auxMath.sind(MPrime - M + 2 * F) -
-        0.00002 * auxMath.sind(MPrime - M - 2 * F) -
-        0.00002 * auxMath.sind(3 * MPrime + M) +
-        0.00002 * auxMath.sind(4 * MPrime);
+        -0.00111 * sind(MPrime - 2 * F) -
+        0.00057 * sind(MPrime + 2 * F) +
+        0.00056 * E * sind(2 * MPrime + M) -
+        0.00042 * sind(3 * MPrime) +
+        0.00042 * E * sind(M + 2 * F) +
+        0.00038 * E * sind(M - 2 * F) -
+        0.00024 * E * sind(2 * MPrime - M) -
+        0.00017 * sind(Omega) -
+        0.00007 * sind(MPrime + 2 * M) +
+        0.00004 * sind(2 * MPrime - 2 * F) +
+        0.00004 * sind(3 * M) +
+        0.00003 * sind(MPrime + M - 2 * F) +
+        0.00003 * sind(2 * MPrime + 2 * F) -
+        0.00003 * sind(MPrime + M + 2 * F) +
+        0.00003 * sind(MPrime - M + 2 * F) -
+        0.00002 * sind(MPrime - M - 2 * F) -
+        0.00002 * sind(3 * MPrime + M) +
+        0.00002 * sind(4 * MPrime);
     if (phase === 0) {
         DeltaJDE +=
-            -0.40720 * auxMath.sind(MPrime) +
-            0.17241 * E * auxMath.sind(M) +
-            0.01608 * auxMath.sind(2 * MPrime) +
-            0.01039 * auxMath.sind(2 * F) +
-            0.00739 * E * auxMath.sind(MPrime - M) -
-            0.00514 * E * auxMath.sind(MPrime + M) +
-            0.00208 * E * E * auxMath.sind(2 * M);
+            -0.40720 * sind(MPrime) +
+            0.17241 * E * sind(M) +
+            0.01608 * sind(2 * MPrime) +
+            0.01039 * sind(2 * F) +
+            0.00739 * E * sind(MPrime - M) -
+            0.00514 * E * sind(MPrime + M) +
+            0.00208 * E * E * sind(2 * M);
     } else if (phase === 2) {
         DeltaJDE +=
-            -0.40614 * auxMath.sind(MPrime) +
-            0.17302 * E * auxMath.sind(M) +
-            0.01614 * auxMath.sind(2 * MPrime) +
-            0.01043 * auxMath.sind(2 * F) +
-            0.00734 * E * auxMath.sind(MPrime - M) -
-            0.00515 * E * auxMath.sind(MPrime + M) +
-            0.00209 * E * E * auxMath.sind(2 * M);
+            -0.40614 * sind(MPrime) +
+            0.17302 * E * sind(M) +
+            0.01614 * sind(2 * MPrime) +
+            0.01043 * sind(2 * F) +
+            0.00734 * E * sind(MPrime - M) -
+            0.00515 * E * sind(MPrime + M) +
+            0.00209 * E * E * sind(2 * M);
     }
     return DeltaJDE;
 };
@@ -226,40 +200,40 @@ const newMoonFullMoonCorrections = function (E, M, MPrime, F, Omega, phase) {
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const quarterCorrections = function (E, M, MPrime, F, Omega, phase) {
+const quarterCorrections = (E, M, MPrime, F, Omega, phase) => {
     let DeltaJDE =
-        -0.62801 * auxMath.sind(MPrime) +
-        0.17172 * E * auxMath.sind(M) -
-        0.01183 * E * auxMath.sind(MPrime + M) +
-        0.00862 * auxMath.sind(2 * MPrime) +
-        0.00804 * auxMath.sind(2 * F) +
-        0.00454 * E * auxMath.sind(MPrime - M) +
-        0.00204 * E * E * auxMath.sind(2 * M) -
-        0.00180 * auxMath.sind(MPrime - 2 * F) -
-        0.00070 * auxMath.sind(MPrime + 2 * F) -
-        0.00040 * auxMath.sind(3 * MPrime) -
-        0.00034 * E * auxMath.sind(2 * MPrime - M) +
-        0.00032 * E * auxMath.sind(M + 2 * F) +
-        0.00032 * E * auxMath.sind(M - 2 * F) -
-        0.00028 * E * E * auxMath.sind(MPrime + 2 * M) +
-        0.00027 * E * auxMath.sind(2 * MPrime + M) -
-        0.00017 * auxMath.sind(Omega) -
-        0.00005 * auxMath.sind(MPrime - M - 2 * F) +
-        0.00004 * auxMath.sind(2 * MPrime + 2 * F) -
-        0.00004 * auxMath.sind(MPrime + M + 2 * F) +
-        0.00004 * auxMath.sind(MPrime - 2 * M) +
-        0.00003 * auxMath.sind(MPrime + M - 2 * F) +
-        0.00003 * auxMath.sind(3 * M) +
-        0.00002 * auxMath.sind(2 * MPrime - 2 * F) +
-        0.00002 * auxMath.sind(MPrime - M + 2 * F) -
-        0.00002 * auxMath.sind(3 * MPrime + M);
+        -0.62801 * sind(MPrime) +
+        0.17172 * E * sind(M) -
+        0.01183 * E * sind(MPrime + M) +
+        0.00862 * sind(2 * MPrime) +
+        0.00804 * sind(2 * F) +
+        0.00454 * E * sind(MPrime - M) +
+        0.00204 * E * E * sind(2 * M) -
+        0.00180 * sind(MPrime - 2 * F) -
+        0.00070 * sind(MPrime + 2 * F) -
+        0.00040 * sind(3 * MPrime) -
+        0.00034 * E * sind(2 * MPrime - M) +
+        0.00032 * E * sind(M + 2 * F) +
+        0.00032 * E * sind(M - 2 * F) -
+        0.00028 * E * E * sind(MPrime + 2 * M) +
+        0.00027 * E * sind(2 * MPrime + M) -
+        0.00017 * sind(Omega) -
+        0.00005 * sind(MPrime - M - 2 * F) +
+        0.00004 * sind(2 * MPrime + 2 * F) -
+        0.00004 * sind(MPrime + M + 2 * F) +
+        0.00004 * sind(MPrime - 2 * M) +
+        0.00003 * sind(MPrime + M - 2 * F) +
+        0.00003 * sind(3 * M) +
+        0.00002 * sind(2 * MPrime - 2 * F) +
+        0.00002 * sind(MPrime - M + 2 * F) -
+        0.00002 * sind(3 * MPrime + M);
     const W =
         0.00306 -
-        0.00038 * E * auxMath.cosd(M) +
-        0.00026 * auxMath.cosd(MPrime) -
-        0.00002 * auxMath.cosd(MPrime - M) +
-        0.00002 * auxMath.cosd(MPrime + M) +
-        0.00002 * auxMath.cosd(2 * F);
+        0.00038 * E * cosd(M) +
+        0.00026 * cosd(MPrime) -
+        0.00002 * cosd(MPrime - M) +
+        0.00002 * cosd(MPrime + M) +
+        0.00002 * cosd(2 * F);
     if (phase === 1) {
         DeltaJDE += W;
     } else if (phase === 3) {

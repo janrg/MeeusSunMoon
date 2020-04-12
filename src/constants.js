@@ -14,8 +14,7 @@ const moonArgumentOfLatitude =
     [93.27191, 483202.017538, -0.0036825, 1 / 327270];
 
 /** See AA p144 */
-const moonAscendingNodeLongitude =
-    [125.04452, -1934.136261, 0.0020708, 1 / 450000];
+const moonAscendingNodeLongitude = [125.04452, -1934.136261, 0.0020708, 1 / 450000];
 
 /** See AA p144 */
 const moonMeanAnomaly = [134.96298, 477198.867398, 0.0086972, 1 / 56250];

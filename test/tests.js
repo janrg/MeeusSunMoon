@@ -183,9 +183,8 @@ const dataIndices = {
     SUNSET: 2,
 };
 
-const dateTimeFromReferenceTime = (referenceTime, timezone = 'UTC') => {
-    return luxon.DateTime.fromFormat(referenceTime, 'yyyy-MM-dd HH:mm', { zone: timezone });
-};
+const dateTimeFromReferenceTime = (referenceTime, timezone = 'UTC') => luxon.DateTime.fromFormat(
+    referenceTime, 'yyyy-MM-dd HH:mm', { zone: timezone });
 
 const expectCorrectTimeOrNoEventCode = (date, eventTime, refEventTime) => {
     // eslint-disable-next-line no-empty

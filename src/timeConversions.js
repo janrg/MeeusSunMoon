@@ -1,4 +1,5 @@
 import * as luxon from 'luxon';
+import { polynomial } from './auxMath';
 
 /**
  * Converts a datetime in UTC to the corresponding Julian Date (see AA p60f).
@@ -6,7 +7,7 @@ import * as luxon from 'luxon';
  * @returns {number} Julian date (fractional number of days since 1 January
  *     4713BC according to the proleptic Julian calendar.
  */
-const datetimeToJD = function (datetime) {
+const datetimeToJD = (datetime) => {
     let Y = datetime.year;
     let M = datetime.month;
     const D = datetime.day + (datetime.hour + (datetime.minute + datetime.second / 60) / 60) / 24;
@@ -29,7 +30,7 @@ const datetimeToJD = function (datetime) {
  * @param {number} JD Julian date to be converted
  * @returns {DateTime} Datetime corresponding to the given Julian date.
  */
-const JDToDatetime = function (JD) {
+const JDToDatetime = (JD) => {
     JD += 0.5;
     const Z = Math.floor(JD);
     const F = JD - Z;
@@ -66,9 +67,7 @@ const JDToDatetime = function (JD) {
  * @param {number} JD Julian date.
  * @returns {number} T.
  */
-const JDToT = function (JD) {
-    return (JD - 2451545) / 36525;
-};
+const JDToT = (JD) => (JD - 2451545) / 36525;
 
 /**
  * Converts a datetime in UTC to the number of Julian centuries since
@@ -76,9 +75,7 @@ const JDToT = function (JD) {
  * @param {DateTime} datetime Datetime to be converted.
  * @returns {number} T.
  */
-const datetimeToT = function (datetime) {
-    return JDToT(datetimeToJD(datetime));
-};
+const datetimeToT = (datetime) => JDToT(datetimeToJD(datetime));
 
 /* eslint-disable complexity */
 /**
@@ -87,7 +84,7 @@ const datetimeToT = function (datetime) {
  * @param {DateTime} datetime Datetime for which ΔT should be calculated.
  * @returns {number} ΔT.
  */
-const DeltaT = function (datetime) {
+const DeltaT = (datetime) => {
     let y = datetime.year;
     // Months are zero-indexed
     y += (datetime.month - 0.5) / 12;
@@ -98,55 +95,49 @@ const DeltaT = function (datetime) {
             throw 'DeltaT can only be calculated between 1999 BCE and 3000 CE';
         case y < -500:
             u = (y - 1820) / 100;
-            return -20 + 32 * u * u;
+            return -20 + 32 * u ** 2;
         case y < 500:
             u = y / 100;
-            return 10583.6 - 1014.41 * u + 33.78311 * u * u - 5.952053 * u * u * u - 0.1798452 * u * u * u * u +
-                0.022174192 * u * u * u * u * u + 0.0090316521 * u * u * u * u * u * u;
+            return polynomial(u, [10583.6, -1014.41, 33.78311, -5.952053, -0.1798452, 0.022174192, 0.0090316521]);
         case y < 1600:
             u = (y - 1000) / 100;
-            return 1574.2 - 556.01 * u + 71.23472 * u * u + 0.319781 * u * u * u - 0.8503463 * u * u * u * u -
-                0.005050998 * u * u * u * u * u + 0.0083572073 * u * u * u * u * u * u;
+            return polynomial(u, [1574.2, -556.01, 71.23472, 0.319781, -0.8503463, -0.005050998, 0.0083572073]);
         case y < 1700:
             t = y - 1600;
-            return 120 - 0.9808 * t - 0.01532 * t * t + t * t * t / 7129;
+            return polynomial(t, [120, -0.9808, -0.01532, 1 / 7129]);
         case y < 1800:
             t = y - 1700;
-            return 8.83 + 0.1603 * t - 0.0059285 * t * t + 0.00013336 * t * t * t - t * t * t * t / 1174000;
+            return polynomial(t, [8.83, 0.1603, -0.0059285, 0.00013336, -1 / 1174000]);
         case y < 1860:
             t = y - 1800;
-            return 13.72 - 0.332447 * t + 0.0068612 * t * t + 0.0041116 * t * t * t - 0.00037436 * t * t * t * t +
-                0.0000121272 * t * t * t * t * t - 0.0000001699 * t * t * t * t * t * t +
-                0.000000000875 * t * t * t * t * t * t * t;
+            return polynomial(t,
+                [13.72, -0.332447, 0.0068612, 0.0041116, -0.00037436, 0.0000121272, -0.0000001699, 0.000000000875]);
         case y < 1900:
             t = y - 1860;
-            return 7.62 + 0.5737 * t - 0.251754 * t * t + 0.01680668 * t * t * t -
-                0.0004473624 * t * t * t * t + t * t * t * t * t / 233174;
+            return polynomial(t, [7.62, 0.5737, -0.251754, 0.01680668, -0.0004473624, 1 / 233174]);
         case y < 1920:
             t = y - 1900;
-            return -2.79 + 1.494119 * t - 0.0598939 * t * t + 0.0061966 * t * t * t - 0.000197 * t * t * t * t;
+            return polynomial(t, [-2.79, 1.494119, -0.0598939, 0.0061966, -0.000197]);
         case y < 1941:
             t = y - 1920;
-            return 21.20 + 0.84493 * t - 0.076100 * t * t + 0.0020936 * t * t * t;
+            return polynomial(t, [21.20, 0.84493, -0.076100, 0.0020936]);
         case y < 1961:
             t = y - 1950;
-            return 29.07 + 0.407 * t - t * t / 233 + t * t * t / 2547;
+            return polynomial(t, [29.07, 0.407, -1 / 233, 1 / 2547]);
         case y < 1986:
             t = y - 1975;
-            return 45.45 + 1.067 * t - t * t / 260 - t * t * t / 718;
+            return polynomial(t, [45.45, 1.067, -1 / 260, -1 / 718]);
         case y < 2005:
             t = y - 2000;
-            return 63.86 + 0.3345 * t - 0.060374 * t * t + 0.0017275 * t * t * t + 0.000651814 * t * t * t * t +
-                0.00002373599 * t * t * t * t * t;
+            return polynomial(t, [63.86, 0.3345, -0.060374, 0.0017275, 0.000651814, 0.00002373599]);
         case y < 2050:
             t = y - 2000;
-            return 62.92 + 0.32217 * t + 0.005589 * t * t;
+            return polynomial(t, [62.92, 0.32217, 0.005589]);
         case y < 2150:
-            return -20 + 32 * ((y - 1820) / 100) * ((y - 1820) / 100) -
-                0.5628 * (2150 - y);
+            return -20 + 32 * ((y - 1820) / 100) ** 2 - 0.5628 * (2150 - y);
         default:
             u = (y - 1820) / 100;
-            return -20 + 32 * u * u;
+            return -20 + 32 * u ** 2;
     }
 };
 /* eslint-enable complexity */
@@ -157,7 +148,7 @@ const DeltaT = function (datetime) {
  * @param {DateTime} datetime Datetime for which k is calculated.
  * @returns {number} k.
  */
-const approxK = function (datetime) {
+const approxK = (datetime) => {
     const year = datetime.year + (datetime.month) / 12 +
         datetime.day / 365.25;
     return (year - 2000) * 12.3685;
@@ -168,8 +159,6 @@ const approxK = function (datetime) {
  * @param {number} k Fractional number of new moons since 2000-01-06.
  * @returns {number} T Fractional num. of centuries since 2000-01-01:12:00:00Z.
  */
-const kToT = function (k) {
-    return k / 1236.85;
-};
+const kToT = (k) => k / 1236.85;
 
 export { datetimeToJD, JDToDatetime, JDToT, datetimeToT, DeltaT, approxK, kToT };

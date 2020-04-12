@@ -27,6 +27,104 @@
   }
 
   /**
+   * Converts angles in degrees to radians.
+   * @param {number} deg Angle in degrees.
+   * @returns {number} Angle in radians.
+   */
+  var deg2rad = function deg2rad(deg) {
+    return deg * 0.017453292519943295;
+  };
+  /**
+   * Converts angles in radians to degrees.
+   * @param {number} rad Angle in radians.
+   * @returns {number} Angle in degrees.
+   */
+
+
+  var rad2deg = function rad2deg(rad) {
+    return rad * 57.29577951308232;
+  };
+  /**
+   * Calculates the sine of an angle given in degrees.
+   * @param {number} deg Angle in degrees.
+   * @returns {number} Sine of the angle.
+   */
+
+
+  var sind = function sind(deg) {
+    return Math.sin(deg2rad(deg));
+  };
+  /**
+   * Calculates the cosine of an angle given in degrees.
+   * @param {number} deg Angle in degrees.
+   * @returns {number} Cosine of the angle.
+   */
+
+
+  var cosd = function cosd(deg) {
+    return Math.cos(deg2rad(deg));
+  };
+  /**
+   * Reduces an angle to the interval 0-360°.
+   * @param {number} angle Angle in degrees.
+   * @returns {number} Reduced angle in degrees.
+   */
+
+
+  var reduceAngle = function reduceAngle(angle) {
+    return angle - 360 * Math.floor(angle / 360);
+  };
+  /**
+   * Evaluates a polynomial in the form A + Bx + Cx^2...
+   * @param {number} variable Value of x in the polynomial.
+   * @param {array} coeffs Array of coefficients [A, B, C...].
+   * @returns {number} Sum of the polynomial.
+   */
+
+
+  var polynomial = function polynomial(variable, coeffs) {
+    var varPower = 1;
+    var sum = 0.0;
+    var numCoeffs = coeffs.length;
+
+    for (var i = 0; i < numCoeffs; i++) {
+      sum += varPower * coeffs[i];
+      varPower *= variable;
+    }
+
+    return sum;
+  };
+  /**
+   * Interpolates a value from 3 known values (see AA p24 Eq3.3).
+   * @param {number} y1 Start value of the interval.
+   * @param {number} y2 Middle value of the interval.
+   * @param {number} y3 End value of the interval.
+   * @param {number} n Location (-0.5 >= n >= 0.5) of result in the interval.
+   * @param {boolean} normalize Whether the final result should be normalized.
+   * @returns {number} Interpolated result.
+   */
+
+
+  var interpolateFromThree = function interpolateFromThree(y1, y2, y3, n) {
+    var normalize = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+    var a = y2 - y1;
+    var b = y3 - y2;
+
+    if (typeof normalize !== 'undefined' && normalize) {
+      if (a < 0) {
+        a += 360;
+      }
+
+      if (b < 0) {
+        b += 360;
+      }
+    }
+
+    var c = b - a;
+    return y2 + n / 2 * (a + b + n * c);
+  };
+
+  /**
    * Converts a datetime in UTC to the corresponding Julian Date (see AA p60f).
    * @param {DateTime} datetime Datetime to be converted.
    * @returns {number} Julian date (fractional number of days since 1 January
@@ -152,62 +250,62 @@
 
       case y < -500:
         u = (y - 1820) / 100;
-        return -20 + 32 * u * u;
+        return -20 + 32 * Math.pow(u, 2);
 
       case y < 500:
         u = y / 100;
-        return 10583.6 - 1014.41 * u + 33.78311 * u * u - 5.952053 * u * u * u - 0.1798452 * u * u * u * u + 0.022174192 * u * u * u * u * u + 0.0090316521 * u * u * u * u * u * u;
+        return polynomial(u, [10583.6, -1014.41, 33.78311, -5.952053, -0.1798452, 0.022174192, 0.0090316521]);
 
       case y < 1600:
         u = (y - 1000) / 100;
-        return 1574.2 - 556.01 * u + 71.23472 * u * u + 0.319781 * u * u * u - 0.8503463 * u * u * u * u - 0.005050998 * u * u * u * u * u + 0.0083572073 * u * u * u * u * u * u;
+        return polynomial(u, [1574.2, -556.01, 71.23472, 0.319781, -0.8503463, -0.005050998, 0.0083572073]);
 
       case y < 1700:
         t = y - 1600;
-        return 120 - 0.9808 * t - 0.01532 * t * t + t * t * t / 7129;
+        return polynomial(t, [120, -0.9808, -0.01532, 1 / 7129]);
 
       case y < 1800:
         t = y - 1700;
-        return 8.83 + 0.1603 * t - 0.0059285 * t * t + 0.00013336 * t * t * t - t * t * t * t / 1174000;
+        return polynomial(t, [8.83, 0.1603, -0.0059285, 0.00013336, -1 / 1174000]);
 
       case y < 1860:
         t = y - 1800;
-        return 13.72 - 0.332447 * t + 0.0068612 * t * t + 0.0041116 * t * t * t - 0.00037436 * t * t * t * t + 0.0000121272 * t * t * t * t * t - 0.0000001699 * t * t * t * t * t * t + 0.000000000875 * t * t * t * t * t * t * t;
+        return polynomial(t, [13.72, -0.332447, 0.0068612, 0.0041116, -0.00037436, 0.0000121272, -0.0000001699, 0.000000000875]);
 
       case y < 1900:
         t = y - 1860;
-        return 7.62 + 0.5737 * t - 0.251754 * t * t + 0.01680668 * t * t * t - 0.0004473624 * t * t * t * t + t * t * t * t * t / 233174;
+        return polynomial(t, [7.62, 0.5737, -0.251754, 0.01680668, -0.0004473624, 1 / 233174]);
 
       case y < 1920:
         t = y - 1900;
-        return -2.79 + 1.494119 * t - 0.0598939 * t * t + 0.0061966 * t * t * t - 0.000197 * t * t * t * t;
+        return polynomial(t, [-2.79, 1.494119, -0.0598939, 0.0061966, -0.000197]);
 
       case y < 1941:
         t = y - 1920;
-        return 21.20 + 0.84493 * t - 0.076100 * t * t + 0.0020936 * t * t * t;
+        return polynomial(t, [21.20, 0.84493, -0.076100, 0.0020936]);
 
       case y < 1961:
         t = y - 1950;
-        return 29.07 + 0.407 * t - t * t / 233 + t * t * t / 2547;
+        return polynomial(t, [29.07, 0.407, -1 / 233, 1 / 2547]);
 
       case y < 1986:
         t = y - 1975;
-        return 45.45 + 1.067 * t - t * t / 260 - t * t * t / 718;
+        return polynomial(t, [45.45, 1.067, -1 / 260, -1 / 718]);
 
       case y < 2005:
         t = y - 2000;
-        return 63.86 + 0.3345 * t - 0.060374 * t * t + 0.0017275 * t * t * t + 0.000651814 * t * t * t * t + 0.00002373599 * t * t * t * t * t;
+        return polynomial(t, [63.86, 0.3345, -0.060374, 0.0017275, 0.000651814, 0.00002373599]);
 
       case y < 2050:
         t = y - 2000;
-        return 62.92 + 0.32217 * t + 0.005589 * t * t;
+        return polynomial(t, [62.92, 0.32217, 0.005589]);
 
       case y < 2150:
-        return -20 + 32 * ((y - 1820) / 100) * ((y - 1820) / 100) - 0.5628 * (2150 - y);
+        return -20 + 32 * Math.pow((y - 1820) / 100, 2) - 0.5628 * (2150 - y);
 
       default:
         u = (y - 1820) / 100;
-        return -20 + 32 * u * u;
+        return -20 + 32 * Math.pow(u, 2);
     }
   };
   /* eslint-enable complexity */
@@ -233,104 +331,6 @@
 
   var kToT = function kToT(k) {
     return k / 1236.85;
-  };
-
-  /**
-   * Converts angles in degrees to radians.
-   * @param {number} deg Angle in degrees.
-   * @returns {number} Angle in radians.
-   */
-  var deg2rad = function deg2rad(deg) {
-    return deg * 0.017453292519943295;
-  };
-  /**
-   * Converts angles in radians to degrees.
-   * @param {number} rad Angle in radians.
-   * @returns {number} Angle in degrees.
-   */
-
-
-  var rad2deg = function rad2deg(rad) {
-    return rad * 57.29577951308232;
-  };
-  /**
-   * Calculates the sine of an angle given in degrees.
-   * @param {number} deg Angle in degrees.
-   * @returns {number} Sine of the angle.
-   */
-
-
-  var sind = function sind(deg) {
-    return Math.sin(deg2rad(deg));
-  };
-  /**
-   * Calculates the cosine of an angle given in degrees.
-   * @param {number} deg Angle in degrees.
-   * @returns {number} Cosine of the angle.
-   */
-
-
-  var cosd = function cosd(deg) {
-    return Math.cos(deg2rad(deg));
-  };
-  /**
-   * Reduces an angle to the interval 0-360°.
-   * @param {number} angle Angle in degrees.
-   * @returns {number} Reduced angle in degrees.
-   */
-
-
-  var reduceAngle = function reduceAngle(angle) {
-    return angle - 360 * Math.floor(angle / 360);
-  };
-  /**
-   * Evaluates a polynomial in the form A + Bx + Cx^2...
-   * @param {number} variable Value of x in the polynomial.
-   * @param {array} coeffs Array of coefficients [A, B, C...].
-   * @returns {number} Sum of the polynomial.
-   */
-
-
-  var polynomial = function polynomial(variable, coeffs) {
-    var varPower = 1;
-    var sum = 0.0;
-    var numCoeffs = coeffs.length;
-
-    for (var i = 0; i < numCoeffs; i++) {
-      sum += varPower * coeffs[i];
-      varPower *= variable;
-    }
-
-    return sum;
-  };
-  /**
-   * Interpolates a value from 3 known values (see AA p24 Eq3.3).
-   * @param {number} y1 Start value of the interval.
-   * @param {number} y2 Middle value of the interval.
-   * @param {number} y3 End value of the interval.
-   * @param {number} n Location (-0.5 >= n >= 0.5) of result in the interval.
-   * @param {boolean} normalize Whether the final result should be normalized.
-   * @returns {number} Interpolated result.
-   */
-
-
-  var interpolateFromThree = function interpolateFromThree(y1, y2, y3, n) {
-    var normalize = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-    var a = y2 - y1;
-    var b = y3 - y2;
-
-    if (typeof normalize !== 'undefined' && normalize) {
-      if (a < 0) {
-        a += 360;
-      }
-
-      if (b < 0) {
-        b += 360;
-      }
-    }
-
-    var c = b - a;
-    return y2 + n / 2 * (a + b + n * c);
   };
 
   /** See AA p144 */
@@ -379,16 +379,16 @@
     }).setZone('UTC', {
       keepLocalTime: true
     });
-    var DeltaT$1 = DeltaT(transit);
+    var deltaT = DeltaT(transit);
     var T = datetimeToT(transit);
     var Theta0 = apparentSiderealTimeGreenwich(T); // Want 0h TD for this, not UT
 
-    var TD = T - DeltaT$1 / (3600 * 24 * 36525);
+    var TD = T - deltaT / (3600 * 24 * 36525);
     var alpha = sunApparentRightAscension(TD); // Sign flip for longitude from AA as we take East as positive
 
     var m = (alpha - L - Theta0) / 360;
     m = normalizeM(m, datetime.offset);
-    var DeltaM = sunTransitCorrection(T, Theta0, DeltaT$1, L, m);
+    var DeltaM = sunTransitCorrection(T, Theta0, deltaT, L, m);
     m += DeltaM;
     transit = transit.plus({
       seconds: Math.floor(m * 3600 * 24 + 0.5)
@@ -430,11 +430,11 @@
     }).setZone('UTC', {
       keepLocalTime: true
     });
-    var DeltaT$1 = DeltaT(suntime);
+    var deltaT = DeltaT(suntime);
     var T = datetimeToT(suntime);
     var Theta0 = apparentSiderealTimeGreenwich(T); // Want 0h TD for this, not UT
 
-    var TD = T - DeltaT$1 / (3600 * 24 * 36525);
+    var TD = T - deltaT / (3600 * 24 * 36525);
     var alpha = sunApparentRightAscension(TD);
     var delta = sunApparentDeclination(TD);
     var H0 = approxLocalHourAngle(phi, delta, offset); // Sign flip for longitude from AA as we take East as positive
@@ -455,7 +455,7 @@
     var DeltaM = 1; // Repeat if correction is larger than ~9s
 
     while (Math.abs(DeltaM) > 0.0001 && counter < 3) {
-      DeltaM = sunRiseSetCorrection(T, Theta0, DeltaT$1, phi, L, m, offset);
+      DeltaM = sunRiseSetCorrection(T, Theta0, deltaT, phi, L, m, offset);
       m += DeltaM;
       counter++;
     }
@@ -562,16 +562,16 @@
    * @param {number} T Fractional number of Julian centuries since
    *     2000-01-01T12:00:00Z.
    * @param {number} Theta0 Apparent sidereal time at Greenwich.
-   * @param {number} DeltaT ΔT = TT − UT.
+   * @param {number} deltaT ΔT = TT − UT.
    * @param {number} L Longitude.
    * @param {number} m Fractional time of day of the event.
    * @returns {number} Currection for the solar transit time.
    */
 
 
-  var sunTransitCorrection = function sunTransitCorrection(T, Theta0, DeltaT, L, m) {
+  var sunTransitCorrection = function sunTransitCorrection(T, Theta0, deltaT, L, m) {
     var theta0 = Theta0 + 360.985647 * m;
-    var n = m + DeltaT / 864000;
+    var n = m + deltaT / 864000;
     var alpha = interpolatedRa(T, n);
     var H = localHourAngle(theta0, L, alpha);
     return -H / 360;
@@ -581,7 +581,7 @@
    * @param {number} T Fractional number of Julian centuries since
    *     2000-01-01T12:00:00Z.
    * @param {number} Theta0 Apparent sidereal time at Greenwich.
-   * @param {number} DeltaT ΔT = TT − UT.
+   * @param {number} deltaT ΔT = TT − UT.
    * @param {number} phi Latitude.
    * @param {number} L Longitude.
    * @param {number} m Fractional time of day of the event.
@@ -592,9 +592,9 @@
    */
 
 
-  var sunRiseSetCorrection = function sunRiseSetCorrection(T, Theta0, DeltaT, phi, L, m, offset) {
+  var sunRiseSetCorrection = function sunRiseSetCorrection(T, Theta0, deltaT, phi, L, m, offset) {
     var theta0 = Theta0 + 360.985647 * m;
-    var n = m + DeltaT / 864000;
+    var n = m + deltaT / 864000;
     var alpha = interpolatedRa(T, n);
     var delta = interpolatedDec(T, n);
     var H = localHourAngle(theta0, L, alpha);
@@ -644,9 +644,7 @@
   var interpolatedRa = function interpolatedRa(T, n) {
     var alpha1 = sunApparentRightAscension(T - 1 / 36525);
     var alpha2 = sunApparentRightAscension(T);
-    var alpha3 = sunApparentRightAscension(T + 1 / 36525); // I don't understand why the RA has to be interpolated with normalization
-    // but the Dec without, but the returned values are wrong otherwise...
-
+    var alpha3 = sunApparentRightAscension(T + 1 / 36525);
     var alpha = interpolateFromThree(alpha1, alpha2, alpha3, n, true);
     return reduceAngle(alpha);
   };
@@ -720,7 +718,7 @@
 
   var meanSiderealTimeGreenwich = function meanSiderealTimeGreenwich(T) {
     var JD2000 = T * 36525;
-    return 280.46061837 + 360.98564736629 * JD2000 + 0.000387933 * T * T - T * T * T / 38710000;
+    return 280.46061837 + 360.98564736629 * JD2000 + 0.000387933 * Math.pow(T, 2) - Math.pow(T, 3) / 38710000;
   };
   /**
    * Calculates the true obliquity of the ecliptic (see AA p147).
@@ -783,7 +781,7 @@
 
   var sunEquationOfCenter = function sunEquationOfCenter(T) {
     var M = sunMeanAnomaly$1(T);
-    return (1.914602 - 0.004817 * T - 0.000014 * T * T) * sind(M) + (0.019993 - 0.000101 * T) * sind(2 * M) + 0.000290 * sind(3 * M);
+    return (1.914602 - 0.004817 * T - 0.000014 * Math.pow(T, 2)) * sind(M) + (0.019993 - 0.000101 * T) * sind(2 * M) + 0.000290 * sind(3 * M);
   };
   /**
    * Calculates the nutation in longitude of the sun (see AA p144ff).
@@ -910,14 +908,6 @@
   };
 
   var noEventCodes = {
-    MIDNIGHT_SUN: 'MIDNIGHT_SUN',
-    NO_ASTRONOMICAL_DAWN: 'NO_ASTRONOMICAL_DAWN',
-    NO_ASTRONOMICAL_DUSK: 'NO_ASTRONOMICAL_DUSK',
-    NO_CIVIL_DAWN: 'NO_CIVIL_DAWN',
-    NO_CIVIL_DUSK: 'NO_CIVIL_DUSK',
-    NO_NAUTICAL_DAWN: 'NO_NAUTICAL_DAWN',
-    NO_NAUTICAL_DUSK: 'NO_NAUTICAL_DUSK',
-    POLAR_NIGHT: 'POLAR_NIGHT',
     SUN_HIGH: 'SUN_HIGH',
     SUN_LOW: 'SUN_LOW'
   };
@@ -966,7 +956,7 @@
 
 
   var meanPhase = function meanPhase(T, k) {
-    return 2451550.09766 + 29.530588861 * k + 0.00015437 * T * T - 0.000000150 * T * T * T + 0.00000000073 * T * T * T * T;
+    return 2451550.09766 + 29.530588861 * k + 0.00015437 * Math.pow(T, 2) - 0.000000150 * Math.pow(T, 3) + 0.00000000073 * Math.pow(T, 4);
   };
   /**
    * Calculates the mean anomaly of the sun (see AA p350 Eq49.4).
@@ -979,7 +969,7 @@
 
 
   var sunMeanAnomaly$2 = function sunMeanAnomaly(T, k) {
-    return 2.5534 + 29.10535670 * k - 0.0000014 * T * T - 0.00000011 * T * T * T;
+    return 2.5534 + 29.10535670 * k - 0.0000014 * Math.pow(T, 2) - 0.00000011 * Math.pow(T, 3);
   };
   /**
    * Calculates the mean anomaly of the moon (see AA p350 Eq49.5).
@@ -992,7 +982,7 @@
 
 
   var moonMeanAnomaly$2 = function moonMeanAnomaly(T, k) {
-    return 201.5643 + 385.81693528 * k + 0.0107582 * T * T + 0.00001238 * T * T * T - 0.000000058 * T * T * T * T;
+    return 201.5643 + 385.81693528 * k + 0.0107582 * Math.pow(T, 2) + 0.00001238 * Math.pow(T, 3) - 0.000000058 * Math.pow(T, 4);
   };
   /**
    * Calculates the argument of latitude of the moon (see AA p350 Eq49.6).
@@ -1005,7 +995,7 @@
 
 
   var moonArgumentOfLatitude$2 = function moonArgumentOfLatitude(T, k) {
-    return 160.7108 + 390.67050284 * k - 0.0016118 * T * T - 0.00000227 * T * T * T + 0.000000011 * T * T * T * T;
+    return 160.7108 + 390.67050284 * k - 0.0016118 * Math.pow(T, 2) - 0.00000227 * Math.pow(T, 3) + 0.000000011 * Math.pow(T, 4);
   };
   /**
    * Calculates the longitude of the ascending node of the lunar orbit (see AA
@@ -1020,7 +1010,7 @@
 
 
   var moonAscendingNodeLongitude$2 = function moonAscendingNodeLongitude(T, k) {
-    return 124.7746 - 1.56375588 * k + 0.0020672 * T * T + 0.00000215 * T * T * T;
+    return 124.7746 - 1.56375588 * k + 0.0020672 * Math.pow(T, 2) + 0.00000215 * Math.pow(T, 3);
   };
   /**
    * Calculates the correction for the eccentricity of the earth's orbit.
@@ -1031,7 +1021,7 @@
 
 
   var eccentricityCorrection = function eccentricityCorrection(T) {
-    return 1 - 0.002516 * T - 0.0000074 * T * T;
+    return 1 - 0.002516 * T - 0.0000074 * Math.pow(T, 2);
   };
   /**
    * Calculates the planetary arguments for the moon phases (see AA p351).
@@ -1044,8 +1034,7 @@
 
 
   var planetaryArguments = function planetaryArguments(T, k) {
-    // Want to follow the numbering conventions from AA
-    return [0, 299.77 + 0.107408 * k - 0.009173 * T * T, 251.88 + 0.016321 * k, 251.83 + 26.651886 * k, 349.42 + 36.412478 * k, 84.66 + 18.206239 * k, 141.74 + 53.303771 * k, 207.14 + 2.453732 * k, 154.84 + 7.306860 * k, 34.52 + 27.261239 * k, 207.19 + 0.121824 * k, 291.34 + 1.844379 * k, 161.72 + 24.198154 * k, 239.56 + 25.513099 * k, 331.55 + 3.592518 * k];
+    return [0, 299.77 + 0.107408 * k - 0.009173 * Math.pow(T, 2), 251.88 + 0.016321 * k, 251.83 + 26.651886 * k, 349.42 + 36.412478 * k, 84.66 + 18.206239 * k, 141.74 + 53.303771 * k, 207.14 + 2.453732 * k, 154.84 + 7.306860 * k, 34.52 + 27.261239 * k, 207.19 + 0.121824 * k, 291.34 + 1.844379 * k, 161.72 + 24.198154 * k, 239.56 + 25.513099 * k, 331.55 + 3.592518 * k];
   };
   /**
    * Calculates the corrections to the planetary arguments for the moon phases

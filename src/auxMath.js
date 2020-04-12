@@ -3,45 +3,35 @@
  * @param {number} deg Angle in degrees.
  * @returns {number} Angle in radians.
  */
-const deg2rad = function (deg) {
-    return deg * 0.017453292519943295;
-};
+const deg2rad = (deg) => deg * 0.017453292519943295;
 
 /**
  * Converts angles in radians to degrees.
  * @param {number} rad Angle in radians.
  * @returns {number} Angle in degrees.
  */
-const rad2deg = function (rad) {
-    return rad * 57.29577951308232;
-};
+const rad2deg = (rad) => rad * 57.29577951308232;
 
 /**
  * Calculates the sine of an angle given in degrees.
  * @param {number} deg Angle in degrees.
  * @returns {number} Sine of the angle.
  */
-const sind = function (deg) {
-    return Math.sin(deg2rad(deg));
-};
+const sind = (deg) => Math.sin(deg2rad(deg));
 
 /**
  * Calculates the cosine of an angle given in degrees.
  * @param {number} deg Angle in degrees.
  * @returns {number} Cosine of the angle.
  */
-const cosd = function (deg) {
-    return Math.cos(deg2rad(deg));
-};
+const cosd = (deg) => Math.cos(deg2rad(deg));
 
 /**
  * Reduces an angle to the interval 0-360°.
  * @param {number} angle Angle in degrees.
  * @returns {number} Reduced angle in degrees.
  */
-const reduceAngle = function (angle) {
-    return angle - (360 * Math.floor(angle / 360));
-};
+const reduceAngle = (angle) => angle - (360 * Math.floor(angle / 360));
 
 /**
  * Evaluates a polynomial in the form A + Bx + Cx^2...
@@ -49,7 +39,7 @@ const reduceAngle = function (angle) {
  * @param {array} coeffs Array of coefficients [A, B, C...].
  * @returns {number} Sum of the polynomial.
  */
-const polynomial = function (variable, coeffs) {
+const polynomial = (variable, coeffs) => {
     let varPower = 1;
     let sum = 0.0;
     const numCoeffs = coeffs.length;
@@ -69,7 +59,7 @@ const polynomial = function (variable, coeffs) {
  * @param {boolean} normalize Whether the final result should be normalized.
  * @returns {number} Interpolated result.
  */
-const interpolateFromThree = function (y1, y2, y3, n, normalize = false) {
+const interpolateFromThree = (y1, y2, y3, n, normalize = false) => {
     let a = y2 - y1;
     let b = y3 - y2;
     if (typeof normalize !== 'undefined' && normalize) {

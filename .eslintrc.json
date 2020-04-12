@@ -1,10 +1,11 @@
 {
     "extends": "standard",
     "parser": "babel-eslint",
+    "plugins": ["prefer-arrow"],
     "rules": {
         "array-bracket-spacing": ["error", "never"],
         "array-callback-return": "error",
-        "arrow-body-style": ["error", "always"],
+        "arrow-body-style": ["error", "as-needed"],
         "arrow-parens": ["error", "always"],
         "block-scoped-var": "error",
         "camelcase": ["error", { "properties": "always" }],
@@ -17,6 +18,7 @@
         "default-case": ["error", {"commentPattern": "^skip\\sdefault"}],
         "dot-notation": "error",
         "for-direction": "error",
+        "func-style": ["error", "expression"],
         "getter-return": "error",
         "guard-for-in": "error",
         "implicit-arrow-linebreak": ["error", "beside"],
@@ -62,6 +64,7 @@
         "object-curly-newline": "off",
         "object-curly-spacing": ["error", "always"],
         "object-shorthand": "error",
+        "prefer-arrow/prefer-arrow-functions": ["error"],
         "prefer-const": "error",
         "prefer-numeric-literals": "error",
         "prefer-rest-params": "error",
