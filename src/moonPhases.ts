@@ -10,7 +10,7 @@ import { kToT } from './timeConversions';
  *                    2 -> full moon, 3 -> last quarter.
  * @returns {number} Julian date in ephemeris time of the moon of given phase.
  */
-const truePhase = (k, phase) => {
+const truePhase = (k: number, phase: number): number => {
     k += phase / 4;
     const T = kToT(k);
     const E = eccentricityCorrection(T);
@@ -40,8 +40,8 @@ const truePhase = (k, phase) => {
  * @returns {number} Julian date in ephemeris time of the moon of given mean
  *     phase.
  */
-const meanPhase = (T, k) => 2451550.09766 + 29.530588861 * k + 0.00015437 * T ** 2 - 0.000000150 * T ** 3 +
-        0.00000000073 * T ** 4;
+const meanPhase = (T: number, k: number): number => 2451550.09766 + 29.530588861 * k + 0.00015437 * T ** 2 -
+    0.000000150 * T ** 3 + 0.00000000073 * T ** 4;
 
 /**
  * Calculates the mean anomaly of the sun (see AA p350 Eq49.4).
@@ -51,7 +51,8 @@ const meanPhase = (T, k) => 2451550.09766 + 29.530588861 * k + 0.00015437 * T **
  *     2000-01-06.
  * @returns {number} Mean anomaly of the sun at the given time.
  */
-const sunMeanAnomaly = (T, k) => 2.5534 + 29.10535670 * k - 0.0000014 * T ** 2 - 0.00000011 * T ** 3;
+const sunMeanAnomaly = (T: number, k: number): number => 2.5534 + 29.10535670 * k - 0.0000014 * T ** 2 -
+    0.00000011 * T ** 3;
 
 /**
  * Calculates the mean anomaly of the moon (see AA p350 Eq49.5).
@@ -61,8 +62,8 @@ const sunMeanAnomaly = (T, k) => 2.5534 + 29.10535670 * k - 0.0000014 * T ** 2 -
  *     2000-01-06.
  * @returns {number} Mean anomaly of the moon at the given time.
  */
-const moonMeanAnomaly = (T, k) => 201.5643 + 385.81693528 * k + 0.0107582 * T ** 2 + 0.00001238 * T ** 3 -
-    0.000000058 * T ** 4;
+const moonMeanAnomaly = (T: number, k: number): number => 201.5643 + 385.81693528 * k + 0.0107582 * T ** 2 +
+    0.00001238 * T ** 3 - 0.000000058 * T ** 4;
 
 /**
  * Calculates the argument of latitude of the moon (see AA p350 Eq49.6).
@@ -72,8 +73,8 @@ const moonMeanAnomaly = (T, k) => 201.5643 + 385.81693528 * k + 0.0107582 * T **
  *     2000-01-06.
  * @returns {number} Argument of latitude of the moon at the given time.
  */
-const moonArgumentOfLatitude = (T, k) => 160.7108 + 390.67050284 * k - 0.0016118 * T ** 2 - 0.00000227 * T ** 3 +
-    0.000000011 * T ** 4;
+const moonArgumentOfLatitude = (T: number, k: number): number => 160.7108 + 390.67050284 * k - 0.0016118 * T ** 2 -
+    0.00000227 * T ** 3 + 0.000000011 * T ** 4;
 
 /**
  * Calculates the longitude of the ascending node of the lunar orbit (see AA
@@ -85,7 +86,8 @@ const moonArgumentOfLatitude = (T, k) => 160.7108 + 390.67050284 * k - 0.0016118
  * @returns {number} Longitude of the ascending node of the lunar orbit at the
  *     given time.
  */
-const moonAscendingNodeLongitude = (T, k) => 124.7746 - 1.56375588 * k + 0.0020672 * T ** 2 + 0.00000215 * T ** 3;
+const moonAscendingNodeLongitude = (T: number, k: number): number => 124.7746 - 1.56375588 * k + 0.0020672 * T ** 2 +
+    0.00000215 * T ** 3;
 
 /**
  * Calculates the correction for the eccentricity of the earth's orbit.
@@ -93,7 +95,7 @@ const moonAscendingNodeLongitude = (T, k) => 124.7746 - 1.56375588 * k + 0.00206
  *     2000-01-01T12:00:00Z.
  * @returns {number} Eccentricity correction.
  */
-const eccentricityCorrection = (T) => 1 - 0.002516 * T - 0.0000074 * T ** 2;
+const eccentricityCorrection = (T: number): number => 1 - 0.002516 * T - 0.0000074 * T ** 2;
 
 /**
  * Calculates the planetary arguments for the moon phases (see AA p351).
@@ -103,7 +105,7 @@ const eccentricityCorrection = (T) => 1 - 0.002516 * T - 0.0000074 * T ** 2;
  *     2000-01-06.
  * @returns {array} Planetary arguments for the moon phases.
  */
-const planetaryArguments = (T, k) => [
+const planetaryArguments = (T: number, k: number): Array<any> => [
     0,
     299.77 + 0.107408 * k - 0.009173 * T ** 2,
     251.88 + 0.016321 * k,
@@ -127,10 +129,10 @@ const planetaryArguments = (T, k) => [
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const commonCorrections = (A) => 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) + 0.000164 * sind(A[3]) +
-    0.000126 * sind(A[4]) + 0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) + 0.000060 * sind(A[7]) +
-    0.000056 * sind(A[8]) + 0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) + 0.000040 * sind(A[11]) +
-    0.000037 * sind(A[12]) + 0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
+const commonCorrections = (A: Array<number>): number => 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) +
+    0.000164 * sind(A[3]) + 0.000126 * sind(A[4]) + 0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) +
+    0.000060 * sind(A[7]) + 0.000056 * sind(A[8]) + 0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) +
+    0.000040 * sind(A[11]) + 0.000037 * sind(A[12]) + 0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
 
 /**
  * Calculates the corrections to the planetary arguments for the moon phases
@@ -145,7 +147,8 @@ const commonCorrections = (A) => 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) +
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const newMoonFullMoonCorrections = (E, M, MPrime, F, Omega, phase) => {
+const newMoonFullMoonCorrections = (E: number, M: number, MPrime: number, F: number, Omega: number, phase: number):
+    number => {
     let DeltaJDE =
         -0.00111 * sind(MPrime - 2 * F) -
         0.00057 * sind(MPrime + 2 * F) +
@@ -200,7 +203,7 @@ const newMoonFullMoonCorrections = (E, M, MPrime, F, Omega, phase) => {
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const quarterCorrections = (E, M, MPrime, F, Omega, phase) => {
+const quarterCorrections = (E: number, M: number, MPrime: number, F: number, Omega: number, phase: number): number => {
     let DeltaJDE =
         -0.62801 * sind(MPrime) +
         0.17172 * E * sind(M) -

@@ -1,8 +1,7 @@
-/* eslint-disable complexity */
-
-import * as MSS from '../src/index.js';
+import * as MSS from '../src/index';
 import * as luxon from 'luxon';
-import { locations, moonPhases } from './referenceTimes.js';
+import { locations, moonPhases } from './referenceTimes';
+import { DateTime } from '../src/types';
 
 // Reference source now rounds down. moment.diff truncates to integer, so by not
 // rounding here, the difference is the same it would be if we rounded down.
@@ -64,7 +63,7 @@ describe('the solar events calculations', () => {
             it('should return the correct times for solar noon', () => {
                 data.forEach((times) => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
-                    const solarNoon = MSS.solarNoon(date, latitude, longitude);
+                    const solarNoon = MSS.solarNoon(date, latitude);
                     const refSolarNoon = getRefEventTime(times[dataIndices.SOLAR_NOON], timezone);
                     expectCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
                 });
@@ -161,8 +160,8 @@ describe('the solar events calculations', () => {
             cases.forEach(({ name, method, sunHigh, expectedTimeString }) => {
                 it(`${name} (sun ${sunHigh ? 'high' : 'low'})`, () => {
                     MSS.options({ returnTimeForNoEventCase: true });
-                    const result = MSS.formatCI(
-                        method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude), 'HH:mm');
+                    const event = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude) as DateTime;
+                    const result = MSS.formatCI(event, 'HH:mm');
                     expect(result).toEqual(expectedTimeString);
                 });
             });

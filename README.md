@@ -173,9 +173,9 @@ midnight sun.
 
 `test/index.html` can be run to verify this if you downloaded the entire
 repository. When `maxError` (maximum deviation in minutes for the test to pass)
-in `test/tests.js` is set to 0, about 2% of the tests will fail. When set to 1,
+in `test/tests.ts` is set to 0, about 2% of the tests will fail. When set to 1,
 all will pass. (Some times which fall under the exception above have been
-excluded from testing, they are listed as empty strings in `referenceTimes.js`.)
+excluded from testing, they are listed as empty strings in `referenceTimes.ts`.)
 
 Tests can also be run in the console via `npm run node-test`.
 

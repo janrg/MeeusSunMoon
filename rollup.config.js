@@ -1,5 +1,5 @@
-import babel from 'rollup-plugin-babel';
 import { terser } from 'rollup-plugin-terser';
+import typescript from 'rollup-plugin-typescript2';
 
 const copyrightNotice = `/**
  * @license MeeusSunMoon v3.0.0
@@ -16,7 +16,7 @@ const copyrightNotice = `/**
 const rollupConfig = (minify, format) => {
     const config = {
         external: ['luxon'],
-        input: 'src/index.js',
+        input: 'src/index.ts',
         output: {
             banner: copyrightNotice,
             file: `dist/meeussunmoon${
@@ -26,13 +26,12 @@ const rollupConfig = (minify, format) => {
             name: 'MeeusSunMoon',
             globals: format === 'es' ? {} : { luxon: 'luxon' },
         },
-        plugins: [],
+        plugins: [typescript({
+            typescript: require('typescript'),
+        })],
     };
-    if (format === 'umd') {
-        config.plugins.push(babel());
-    }
     if (minify) {
-        config.plugins.push(terser({ output: { preamble: copyrightNotice } }));
+        config.plugins.push(terser());
         config.output.sourcemap = true;
     }
     return config;

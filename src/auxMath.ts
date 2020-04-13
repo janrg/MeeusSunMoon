@@ -3,35 +3,35 @@
  * @param {number} deg Angle in degrees.
  * @returns {number} Angle in radians.
  */
-const deg2rad = (deg) => deg * 0.017453292519943295;
+const deg2rad = (deg: number): number => deg * 0.017453292519943295;
 
 /**
  * Converts angles in radians to degrees.
  * @param {number} rad Angle in radians.
  * @returns {number} Angle in degrees.
  */
-const rad2deg = (rad) => rad * 57.29577951308232;
+const rad2deg = (rad: number): number => rad * 57.29577951308232;
 
 /**
  * Calculates the sine of an angle given in degrees.
  * @param {number} deg Angle in degrees.
  * @returns {number} Sine of the angle.
  */
-const sind = (deg) => Math.sin(deg2rad(deg));
+const sind = (deg: number): number => Math.sin(deg2rad(deg));
 
 /**
  * Calculates the cosine of an angle given in degrees.
  * @param {number} deg Angle in degrees.
  * @returns {number} Cosine of the angle.
  */
-const cosd = (deg) => Math.cos(deg2rad(deg));
+const cosd = (deg: number): number => Math.cos(deg2rad(deg));
 
 /**
  * Reduces an angle to the interval 0-360°.
  * @param {number} angle Angle in degrees.
  * @returns {number} Reduced angle in degrees.
  */
-const reduceAngle = (angle) => angle - (360 * Math.floor(angle / 360));
+const reduceAngle = (angle: number): number => angle - (360 * Math.floor(angle / 360));
 
 /**
  * Evaluates a polynomial in the form A + Bx + Cx^2...
@@ -39,7 +39,7 @@ const reduceAngle = (angle) => angle - (360 * Math.floor(angle / 360));
  * @param {array} coeffs Array of coefficients [A, B, C...].
  * @returns {number} Sum of the polynomial.
  */
-const polynomial = (variable, coeffs) => {
+const polynomial = (variable: number, coeffs: Array<number>): number => {
     let varPower = 1;
     let sum = 0.0;
     const numCoeffs = coeffs.length;
@@ -59,7 +59,7 @@ const polynomial = (variable, coeffs) => {
  * @param {boolean} normalize Whether the final result should be normalized.
  * @returns {number} Interpolated result.
  */
-const interpolateFromThree = (y1, y2, y3, n, normalize = false) => {
+const interpolateFromThree = (y1: number, y2: number, y3: number, n: number, normalize: boolean = false): number => {
     let a = y2 - y1;
     let b = y3 - y2;
     if (typeof normalize !== 'undefined' && normalize) {

@@ -1,7 +1,7 @@
 {
     "extends": "standard",
-    "parser": "babel-eslint",
-    "plugins": ["prefer-arrow"],
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["prefer-arrow", "@typescript-eslint"],
     "rules": {
         "array-bracket-spacing": ["error", "never"],
         "array-callback-return": "error",
@@ -82,7 +82,8 @@
         "sort-vars": "error",
         "switch-colon-spacing": "error",
         "valid-jsdoc": ["error", {"prefer": {"arg": "param", "argument": "param", "class": "constructor", "return": "returns", "virtual": "abstract"}, "requireReturn": false}],
-        "wrap-regex": "error"
+        "wrap-regex": "error",
+        "@typescript-eslint/no-unused-vars": ["error"]
     },
     "overrides": [{
       "env": {"jest": true},

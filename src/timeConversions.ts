@@ -1,4 +1,4 @@
-import * as luxon from 'luxon';
+import { DateTime } from 'luxon';
 import { polynomial } from './auxMath';
 
 /**
@@ -7,7 +7,7 @@ import { polynomial } from './auxMath';
  * @returns {number} Julian date (fractional number of days since 1 January
  *     4713BC according to the proleptic Julian calendar.
  */
-const datetimeToJD = (datetime) => {
+const datetimeToJD = (datetime: DateTime): number => {
     let Y = datetime.year;
     let M = datetime.month;
     const D = datetime.day + (datetime.hour + (datetime.minute + datetime.second / 60) / 60) / 24;
@@ -17,7 +17,7 @@ const datetimeToJD = (datetime) => {
     }
     const A = Math.floor(Y / 100);
     // Need a different B if we are before introduction of the Gregorian Calendar
-    const gregorianCutoff = luxon.DateTime.fromISO('1582-10-15T12:00:00Z', { zone: 'UTC' });
+    const gregorianCutoff = DateTime.fromISO('1582-10-15T12:00:00Z', { zone: 'UTC' });
     let B = 0;
     if (datetime > gregorianCutoff) {
         B = 2 - A + Math.floor(A / 4);
@@ -30,7 +30,7 @@ const datetimeToJD = (datetime) => {
  * @param {number} JD Julian date to be converted
  * @returns {DateTime} Datetime corresponding to the given Julian date.
  */
-const JDToDatetime = (JD) => {
+const JDToDatetime = (JD: number): DateTime => {
     JD += 0.5;
     const Z = Math.floor(JD);
     const F = JD - Z;
@@ -56,7 +56,7 @@ const JDToDatetime = (JD) => {
     if (month > 2) {
         year -= 1;
     }
-    return luxon.DateTime.fromISO('2000-01-01T12:00:00Z', { zone: 'UTC' })
+    return DateTime.fromISO('2000-01-01T12:00:00Z', { zone: 'UTC' })
         // eslint-disable-next-line sort-keys
         .set({ year, month, day, hour, minute, second });
 };
@@ -67,7 +67,7 @@ const JDToDatetime = (JD) => {
  * @param {number} JD Julian date.
  * @returns {number} T.
  */
-const JDToT = (JD) => (JD - 2451545) / 36525;
+const JDToT = (JD: number): number => (JD - 2451545) / 36525;
 
 /**
  * Converts a datetime in UTC to the number of Julian centuries since
@@ -75,7 +75,7 @@ const JDToT = (JD) => (JD - 2451545) / 36525;
  * @param {DateTime} datetime Datetime to be converted.
  * @returns {number} T.
  */
-const datetimeToT = (datetime) => JDToT(datetimeToJD(datetime));
+const datetimeToT = (datetime: DateTime): number => JDToT(datetimeToJD(datetime));
 
 /* eslint-disable complexity */
 /**
@@ -84,7 +84,7 @@ const datetimeToT = (datetime) => JDToT(datetimeToJD(datetime));
  * @param {DateTime} datetime Datetime for which ΔT should be calculated.
  * @returns {number} ΔT.
  */
-const DeltaT = (datetime) => {
+const DeltaT = (datetime: DateTime): number => {
     let y = datetime.year;
     // Months are zero-indexed
     y += (datetime.month - 0.5) / 12;
@@ -148,7 +148,7 @@ const DeltaT = (datetime) => {
  * @param {DateTime} datetime Datetime for which k is calculated.
  * @returns {number} k.
  */
-const approxK = (datetime) => {
+const approxK = (datetime: DateTime): number => {
     const year = datetime.year + (datetime.month) / 12 +
         datetime.day / 365.25;
     return (year - 2000) * 12.3685;
@@ -159,6 +159,6 @@ const approxK = (datetime) => {
  * @param {number} k Fractional number of new moons since 2000-01-06.
  * @returns {number} T Fractional num. of centuries since 2000-01-01:12:00:00Z.
  */
-const kToT = (k) => k / 1236.85;
+const kToT = (k: number): number => k / 1236.85;
 
 export { datetimeToJD, JDToDatetime, JDToT, datetimeToT, DeltaT, approxK, kToT };

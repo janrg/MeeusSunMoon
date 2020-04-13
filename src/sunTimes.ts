@@ -2,6 +2,7 @@ import * as constants from './constants';
 import { DeltaT, datetimeToT } from './timeConversions';
 import { cosd, interpolateFromThree, polynomial, rad2deg, reduceAngle, sind } from './auxMath';
 import { returnTimeForNoEventCase, roundToNearestMinute } from './index';
+import { DateTime } from './types';
 
 /**
  * Calculates the solar transit time on a date at a given longitude (see AA
@@ -10,7 +11,7 @@ import { returnTimeForNoEventCase, roundToNearestMinute } from './index';
  * @param {number} L Longitude.
  * @returns {DateTime} Solar transit time.
  */
-const sunTransit = (datetime, L) => {
+const sunTransit = (datetime: DateTime, L: number): DateTime => {
     const timezone = datetime.zone;
     let transit = datetime.set({ hour: 0, minute: 0, second: 0 }).setZone('UTC', { keepLocalTime: true });
     const deltaT = DeltaT(transit);
@@ -45,7 +46,7 @@ const sunTransit = (datetime, L) => {
  * @returns {DateTime} Sunrise or sunset time.
  */
 // eslint-disable-next-line complexity,require-jsdoc
-const sunRiseSet = (datetime, phi, L, flag, offset = 50 / 60) => {
+const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: string, offset: number = 50 / 60): DateTime => {
     const timezone = datetime.zone;
     let suntime = datetime.set({ hour: 0, minute: 0, second: 0 }).setZone('UTC', { keepLocalTime: true });
     const deltaT = DeltaT(suntime);
@@ -65,7 +66,8 @@ const sunRiseSet = (datetime, phi, L, flag, offset = 50 / 60) => {
     } else if (flag === 'SET') {
         m = m0 + H0 / 360;
     } else {
-        return false;
+        // TO DO
+        throw 'WTF';
     }
     let counter = 0;
     let DeltaM = 1;
@@ -99,11 +101,12 @@ const sunRiseSet = (datetime, phi, L, flag, offset = 50 / 60) => {
  *     DST if applicable) or a string indicating why there was no event ('SUN_HIGH'
  *     or 'SUN_LOW')
  */
-const handleNoEventCase = (date, errorCode, hour, minute = 0) => {
+const handleNoEventCase = (date: DateTime, errorCode: string | undefined, hour: number, minute: number = 0):
+    (DateTime | string) => {
     if (returnTimeForNoEventCase) {
         const returnDate = date.set({ hour, minute, second: 0 }).plus({ minutes: date.isInDST ? 60 : 0 });
         if (errorCode) {
-            returnDate.errorCode = errorCode;
+            (returnDate as DateTime).errorCode = errorCode;
         }
         return returnDate;
     }
@@ -119,7 +122,7 @@ const handleNoEventCase = (date, errorCode, hour, minute = 0) => {
  *     astronomical dawn/dusk.
  * @returns {number} Approximate local hour angle.
  */
-const approxLocalHourAngle = (phi, delta, offset) => {
+const approxLocalHourAngle = (phi: number, delta: number, offset: number): number => {
     const cosH0 = (sind(-offset) -
         sind(phi) * sind(delta)) /
         (cosd(phi) * cosd(delta));
@@ -137,7 +140,7 @@ const approxLocalHourAngle = (phi, delta, offset) => {
  * @param {int} utcOffset Offset in minutes from UTC.
  * @returns {number} m Normalized m.
  */
-const normalizeM = (m, utcOffset) => {
+const normalizeM = (m: number, utcOffset: number): number => {
     const localM = m + utcOffset / 1440;
     if (localM < 0) {
         return m + 1;
@@ -157,7 +160,7 @@ const normalizeM = (m, utcOffset) => {
  * @param {number} m Fractional time of day of the event.
  * @returns {number} Currection for the solar transit time.
  */
-const sunTransitCorrection = (T, Theta0, deltaT, L, m) => {
+const sunTransitCorrection = (T: number, Theta0: number, deltaT: number, L: number, m: number): number => {
     const theta0 = Theta0 + 360.985647 * m;
     const n = m + deltaT / 864000;
     const alpha = interpolatedRa(T, n);
@@ -179,15 +182,16 @@ const sunTransitCorrection = (T, Theta0, deltaT, L, m) => {
  *     astronomical dawn/dusk.
  * @returns {number} Currection for the sunrise/sunset time.
  */
-const sunRiseSetCorrection = (T, Theta0, deltaT, phi, L, m, offset) => {
-    const theta0 = Theta0 + 360.985647 * m;
-    const n = m + deltaT / 864000;
-    const alpha = interpolatedRa(T, n);
-    const delta = interpolatedDec(T, n);
-    const H = localHourAngle(theta0, L, alpha);
-    const h = altitude(phi, delta, H);
-    return (h + offset) / (360 * cosd(delta) * cosd(phi) * sind(H));
-};
+const sunRiseSetCorrection =
+    (T: number, Theta0: number, deltaT: number, phi: number, L: number, m: number, offset: number): number => {
+        const theta0 = Theta0 + 360.985647 * m;
+        const n = m + deltaT / 864000;
+        const alpha = interpolatedRa(T, n);
+        const delta = interpolatedDec(T, n);
+        const H = localHourAngle(theta0, L, alpha);
+        const h = altitude(phi, delta, H);
+        return (h + offset) / (360 * cosd(delta) * cosd(phi) * sind(H));
+    };
 
 /**
  * Calculates the local hour angle of the sun (see AA p103).
@@ -196,7 +200,7 @@ const sunRiseSetCorrection = (T, Theta0, deltaT, phi, L, m, offset) => {
  * @param {number} alpha Apparent right ascension of the sun.
  * @returns {number} Local hour angle of the sun.
  */
-const localHourAngle = (theta0, L, alpha) => {
+const localHourAngle = (theta0: number, L: number, alpha: number): number => {
     // Signflip for longitude
     let H = reduceAngle(theta0 + L - alpha);
     if (H > 180) {
@@ -212,7 +216,7 @@ const localHourAngle = (theta0, L, alpha) => {
  * @param {number} H Local hour angle of the sun.
  * @returns {number} Altitude of the sun above the horizon.
  */
-const altitude = (phi, delta, H) => rad2deg(Math.asin(
+const altitude = (phi: number, delta: number, H: number): number => rad2deg(Math.asin(
     sind(phi) * sind(delta) + cosd(phi) * cosd(delta) * cosd(H)));
 
 /**
@@ -222,7 +226,7 @@ const altitude = (phi, delta, H) => rad2deg(Math.asin(
  * @param {number} n Fractional time of day of the event corrected by ΔT.
  * @returns {number} Interpolated right ascension.
  */
-const interpolatedRa = (T, n) => {
+const interpolatedRa = (T: number, n: number): number => {
     const alpha1 = sunApparentRightAscension(T - (1 / 36525));
     const alpha2 = sunApparentRightAscension(T);
     const alpha3 = sunApparentRightAscension(T + (1 / 36525));
@@ -237,7 +241,7 @@ const interpolatedRa = (T, n) => {
  * @param {number} n Fractional time of day of the event corrected by ΔT.
  * @returns {number} Interpolated declination.
  */
-const interpolatedDec = (T, n) => {
+const interpolatedDec = (T: number, n: number): number => {
     const delta1 = sunApparentDeclination(T - (1 / 36525));
     const delta2 = sunApparentDeclination(T);
     const delta3 = sunApparentDeclination(T + (1 / 36525));
@@ -251,7 +255,7 @@ const interpolatedDec = (T, n) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Apparent right ascension of the sun.
  */
-const sunApparentRightAscension = (T) => {
+const sunApparentRightAscension = (T: number): number => {
     const Omega = moonAscendingNodeLongitude(T);
     const epsilon = trueObliquityOfEcliptic(T) + 0.00256 * cosd(Omega);
     const lambda = sunApparentLongitude(T);
@@ -265,7 +269,7 @@ const sunApparentRightAscension = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Apparent declination of the sun.
  */
-const sunApparentDeclination = (T) => {
+const sunApparentDeclination = (T: number): number => {
     const Omega = moonAscendingNodeLongitude(T);
     const epsilon = trueObliquityOfEcliptic(T) + 0.00256 * cosd(Omega);
     const lambda = sunApparentLongitude(T);
@@ -278,7 +282,7 @@ const sunApparentDeclination = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Apparent sidereal time at Greenwich
  */
-const apparentSiderealTimeGreenwich = (T) => {
+const apparentSiderealTimeGreenwich = (T: number): number => {
     const theta0 = meanSiderealTimeGreenwich(T);
     const epsilon = trueObliquityOfEcliptic(T);
     const DeltaPsi = nutationInLongitude(T);
@@ -292,7 +296,7 @@ const apparentSiderealTimeGreenwich = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Mean sidereal time at Greenwich
  */
-const meanSiderealTimeGreenwich = (T) => {
+const meanSiderealTimeGreenwich = (T: number): number => {
     const JD2000 = T * 36525;
     return 280.46061837 + 360.98564736629 * JD2000 + 0.000387933 * T ** 2 - T ** 3 / 38710000;
 };
@@ -303,7 +307,7 @@ const meanSiderealTimeGreenwich = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} True obliquity of the ecliptic.
  */
-const trueObliquityOfEcliptic = (T) => {
+const trueObliquityOfEcliptic = (T: number): number => {
     const epsilon0 = meanObliquityOfEcliptic(T);
     const DeltaEpsilon = nutationInObliquity(T);
     return epsilon0 + DeltaEpsilon;
@@ -315,7 +319,7 @@ const trueObliquityOfEcliptic = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Mean obliquity of the ecliptic.
  */
-const meanObliquityOfEcliptic = (T) => {
+const meanObliquityOfEcliptic = (T: number): number => {
     const U = T / 100;
     return polynomial(U, constants.meanObliquityOfEcliptic);
 };
@@ -326,7 +330,7 @@ const meanObliquityOfEcliptic = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Apparent longitude of the sun.
  */
-const sunApparentLongitude = (T) => {
+const sunApparentLongitude = (T: number): number => {
     const Sol = sunTrueLongitude(T);
     const Omega = moonAscendingNodeLongitude(T);
     return Sol - 0.00569 - 0.00478 * sind(Omega);
@@ -338,7 +342,7 @@ const sunApparentLongitude = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} True longitude of the sun.
  */
-const sunTrueLongitude = (T) => {
+const sunTrueLongitude = (T: number): number => {
     const L0 = sunMeanLongitude(T);
     const C = sunEquationOfCenter(T);
     return L0 + C;
@@ -350,7 +354,7 @@ const sunTrueLongitude = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Equation of center of the sun.
  */
-const sunEquationOfCenter = (T) => {
+const sunEquationOfCenter = (T: number): number => {
     const M = sunMeanAnomaly(T);
     return (1.914602 - 0.004817 * T - 0.000014 * T ** 2) * sind(M) +
         (0.019993 - 0.000101 * T) * sind(2 * M) + 0.000290 * sind(3 * M);
@@ -362,7 +366,7 @@ const sunEquationOfCenter = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Nutation in longitude of the sun.
  */
-const nutationInLongitude = (T) => {
+const nutationInLongitude = (T: number): number => {
     const D = moonMeanElongation(T);
     const M = sunMeanAnomaly(T);
     const MPrime = moonMeanAnomaly(T);
@@ -384,7 +388,7 @@ const nutationInLongitude = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Nutation in obliquity of the sun.
  */
-const nutationInObliquity = (T) => {
+const nutationInObliquity = (T: number): number => {
     const D = moonMeanElongation(T);
     const M = sunMeanAnomaly(T);
     const MPrime = moonMeanAnomaly(T);
@@ -406,7 +410,7 @@ const nutationInObliquity = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Argument of latitude of the moon.
  */
-const moonArgumentOfLatitude = (T) => {
+const moonArgumentOfLatitude = (T: number): number => {
     const F = polynomial(T, constants.moonArgumentOfLatitude);
     return reduceAngle(F);
 };
@@ -418,7 +422,7 @@ const moonArgumentOfLatitude = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Longitude of the asc. node of the moon's mean orbit.
  */
-const moonAscendingNodeLongitude = (T) => {
+const moonAscendingNodeLongitude = (T: number): number => {
     const Omega = polynomial(T, constants.moonAscendingNodeLongitude);
     return reduceAngle(Omega);
 };
@@ -429,7 +433,7 @@ const moonAscendingNodeLongitude = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Mean anomaly of the moon.
  */
-const moonMeanAnomaly = (T) => {
+const moonMeanAnomaly = (T: number): number => {
     const MPrime = polynomial(T, constants.moonMeanAnomaly);
     return reduceAngle(MPrime);
 };
@@ -440,7 +444,7 @@ const moonMeanAnomaly = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Mean elongation of the moon from the sun.
  */
-const moonMeanElongation = (T) => {
+const moonMeanElongation = (T: number): number => {
     const D = polynomial(T, constants.moonMeanElongation);
     return reduceAngle(D);
 };
@@ -451,7 +455,7 @@ const moonMeanElongation = (T) => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Mean anomaly of the sun.
  */
-const sunMeanAnomaly = (T) => {
+const sunMeanAnomaly = (T: number): number => {
     const M = polynomial(T, constants.sunMeanAnomaly);
     return reduceAngle(M);
 };
@@ -464,7 +468,7 @@ const sunMeanAnomaly = (T) => {
  * @returns {number} Mean longitude of the sun referred to the mean equinox of
  *     the date.
  */
-const sunMeanLongitude = (T) => {
+const sunMeanLongitude = (T: number): number => {
     const L0 = polynomial(T, constants.sunMeanLongitude);
     return reduceAngle(L0);
 };
