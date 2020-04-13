@@ -86,7 +86,6 @@ const datetimeToT = (datetime: DateTime): number => JDToT(datetimeToJD(datetime)
  */
 const DeltaT = (datetime: DateTime): number => {
     let y = datetime.year;
-    // Months are zero-indexed
     y += (datetime.month - 0.5) / 12;
     let u;
     let t;

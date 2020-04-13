@@ -161,7 +161,6 @@
      */
     const DeltaT = (datetime) => {
         let y = datetime.year;
-        // Months are zero-indexed
         y += (datetime.month - 0.5) / 12;
         let u;
         let t;
@@ -378,12 +377,8 @@
         if (flag === 'RISE') {
             m = m0 - H0 / 360;
         }
-        else if (flag === 'SET') {
-            m = m0 + H0 / 360;
-        }
         else {
-            // TO DO
-            throw 'WTF';
+            m = m0 + H0 / 360;
         }
         let counter = 0;
         let DeltaM = 1;
@@ -411,8 +406,8 @@
      * or too low ('SUN_LOW').
      * @param {DateTime} date The original date from which the event was calculated.
      * @param {string|undefined} errorCode The error code in case no event was found
-     * @param {int} hour Hour to which the returned datetime should be set.
-     * @param {int} minute Minute to which the returned datetime should be set.
+     * @param {number} hour Hour to which the returned datetime should be set.
+     * @param {number} minute Minute to which the returned datetime should be set.
      * @returns {(DateTime|string)} Time given by parameter 'hour' (+ correction for
      *     DST if applicable) or a string indicating why there was no event ('SUN_HIGH'
      *     or 'SUN_LOW')
@@ -420,9 +415,7 @@
     const handleNoEventCase = (date, errorCode, hour, minute = 0) => {
         if (exports.returnTimeForNoEventCase) {
             const returnDate = date.set({ hour, minute, second: 0 }).plus({ minutes: date.isInDST ? 60 : 0 });
-            if (errorCode) {
-                returnDate.errorCode = errorCode;
-            }
+            returnDate.errorCode = errorCode;
             return returnDate;
         }
         return errorCode;
@@ -451,7 +444,7 @@
     /**
      * Normalizes a fractional time of day to be on the correct date.
      * @param {number} m Fractional time of day
-     * @param {int} utcOffset Offset in minutes from UTC.
+     * @param {number} utcOffset Offset in minutes from UTC.
      * @returns {number} m Normalized m.
      */
     const normalizeM = (m, utcOffset) => {
@@ -493,7 +486,7 @@
      * @param {number} offset number of degrees below the horizon for the desired
      *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
      *     astronomical dawn/dusk.
-     * @returns {number} Currection for the sunrise/sunset time.
+     * @returns {number} Correction for the sunrise/sunset time.
      */
     const sunRiseSetCorrection = (T, Theta0, deltaT, phi, L, m, offset) => {
         const theta0 = Theta0 + 360.985647 * m;
@@ -512,7 +505,7 @@
      * @returns {number} Local hour angle of the sun.
      */
     const localHourAngle = (theta0, L, alpha) => {
-        // Signflip for longitude
+        // Sign flip for longitude
         let H = reduceAngle(theta0 + L - alpha);
         if (H > 180) {
             H -= 360;
@@ -772,8 +765,8 @@
      * corresponding to k (see AA p350ff).
      * @param {number} k The approximate fractional number of new moons since
      *     2000-01-06.
-     * @param {int} phase 0 -> new moon, 1 -> first quarter,
-     *                    2 -> full moon, 3 -> last quarter.
+     * @param {number} phase 0 -> new moon, 1 -> first quarter,
+     *                       2 -> full moon, 3 -> last quarter.
      * @returns {number} Julian date in ephemeris time of the moon of given phase.
      */
     const truePhase = (k, phase) => {
@@ -785,7 +778,6 @@
         const MPrime = moonMeanAnomaly$2(T, k);
         const F = moonArgumentOfLatitude$2(T, k);
         const Omega = moonAscendingNodeLongitude$2(T, k);
-        const A = planetaryArguments(T, k);
         let DeltaJDE = 0;
         if (phase === 0 || phase === 2) {
             DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
@@ -793,7 +785,7 @@
         else if (phase === 1 || phase === 3) {
             DeltaJDE += quarterCorrections(E, M, MPrime, F, Omega, phase);
         }
-        DeltaJDE += commonCorrections(A);
+        DeltaJDE += commonCorrections(T, k);
         return JDE + DeltaJDE;
     };
     /**
@@ -858,41 +850,38 @@
      */
     const eccentricityCorrection = (T) => 1 - 0.002516 * T - 0.0000074 * Math.pow(T, 2);
     /**
-     * Calculates the planetary arguments for the moon phases (see AA p351).
+     * Calculates the corrections to the planetary arguments for the moon phases
+     * that are common to all phases (see AA p352).
      * @param {number} T Fractional number of Julian centuries since
      *     2000-01-01T12:00:00Z.
      * @param {number} k The approximate fractional number of new moons since
      *     2000-01-06.
-     * @returns {array} Planetary arguments for the moon phases.
-     */
-    const planetaryArguments = (T, k) => [
-        0,
-        299.77 + 0.107408 * k - 0.009173 * Math.pow(T, 2),
-        251.88 + 0.016321 * k,
-        251.83 + 26.651886 * k,
-        349.42 + 36.412478 * k,
-        84.66 + 18.206239 * k,
-        141.74 + 53.303771 * k,
-        207.14 + 2.453732 * k,
-        154.84 + 7.306860 * k,
-        34.52 + 27.261239 * k,
-        207.19 + 0.121824 * k,
-        291.34 + 1.844379 * k,
-        161.72 + 24.198154 * k,
-        239.56 + 25.513099 * k,
-        331.55 + 3.592518 * k
-    ];
-    /**
-     * Calculates the corrections to the planetary arguments for the moon phases
-     * that are common to all phases (see AA p352).
-     * @param {array} A Array of planetary arguments
      * @returns {number} Correction to the Julian date in ephemeris time for the
      *     moon phase.
      */
-    const commonCorrections = (A) => 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) +
-        0.000164 * sind(A[3]) + 0.000126 * sind(A[4]) + 0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) +
-        0.000060 * sind(A[7]) + 0.000056 * sind(A[8]) + 0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) +
-        0.000040 * sind(A[11]) + 0.000037 * sind(A[12]) + 0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
+    const commonCorrections = (T, k) => {
+        const A = [
+            0,
+            299.77 + 0.107408 * k - 0.009173 * Math.pow(T, 2),
+            251.88 + 0.016321 * k,
+            251.83 + 26.651886 * k,
+            349.42 + 36.412478 * k,
+            84.66 + 18.206239 * k,
+            141.74 + 53.303771 * k,
+            207.14 + 2.453732 * k,
+            154.84 + 7.306860 * k,
+            34.52 + 27.261239 * k,
+            207.19 + 0.121824 * k,
+            291.34 + 1.844379 * k,
+            161.72 + 24.198154 * k,
+            239.56 + 25.513099 * k,
+            331.55 + 3.592518 * k
+        ];
+        return 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) + 0.000164 * sind(A[3]) + 0.000126 * sind(A[4]) +
+            0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) + 0.000060 * sind(A[7]) + 0.000056 * sind(A[8]) +
+            0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) + 0.000040 * sind(A[11]) + 0.000037 * sind(A[12]) +
+            0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
+    };
     /**
      * Calculates the corrections to the planetary arguments for the moon phases
      * for full and new moons (see AA p351).
@@ -901,7 +890,7 @@
      * @param {number} MPrime Mean anomaly of the moon.
      * @param {number} F Argument of latitude of the moon.
      * @param {number} Omega Longitude of the ascending node of the lunar orbit.
-     * @param {int} phase 0 -> new moon, 1 -> first quarter,
+     * @param {number} phase 0 -> new moon, 1 -> first quarter,
      *                    2 -> full moon, 3 -> last quarter.
      * @returns {number} Correction to the Julian date in ephemeris time for the
      *     moon phase.
@@ -955,7 +944,7 @@
      * @param {number} MPrime Mean anomaly of the moon.
      * @param {number} F Argument of latitude of the moon.
      * @param {number} Omega Longitude of the ascending node of the lunar orbit.
-     * @param {int} phase 0 -> new moon, 1 -> first quarter,
+     * @param {number} phase 0 -> new moon, 1 -> first quarter,
      *                    2 -> full moon, 3 -> last quarter.
      * @returns {number} Correction to the Julian date in ephemeris time for the
      *     moon phase.
@@ -1030,7 +1019,7 @@
      * @param {string} formatString Valid DateTime format string.
      * @returns {string} Formatted string with marker appended.
      */
-    const formatCI = (datetime, formatString) => {
+    const format = (datetime, formatString) => {
         const noEventCode = datetime.errorCode;
         let datestring = datetime.toFormat(formatString);
         if (dateFormatKeys[noEventCode]) {
@@ -1202,8 +1191,8 @@
     /**
      * Calculates all moons of the given phase that occur within the given
      * Gregorian calendar year.
-     * @param {int} year Year for which moon phases should be calculated.
-     * @param {int} phase 0 -> new moon, 1 -> first quarter,
+     * @param {number} year Year for which moon phases should be calculated.
+     * @param {number} phase 0 -> new moon, 1 -> first quarter,
      *                    2 -> full moon, 3 -> last quarter.
      * @param {string} timezone Optional: IANA timezone string.
      * @returns {array} Array of DateTime objects for moons of the given phase.
@@ -1249,7 +1238,7 @@
     exports.astronomicalDusk = astronomicalDusk;
     exports.civilDawn = civilDawn;
     exports.civilDusk = civilDusk;
-    exports.formatCI = formatCI;
+    exports.format = format;
     exports.nauticalDawn = nauticalDawn;
     exports.nauticalDusk = nauticalDusk;
     exports.options = options;

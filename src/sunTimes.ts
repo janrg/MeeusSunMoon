@@ -1,8 +1,8 @@
 import * as constants from './constants';
+import { DateTime, NoEventCode, RiseSetFlag } from './types';
 import { DeltaT, datetimeToT } from './timeConversions';
 import { cosd, interpolateFromThree, polynomial, rad2deg, reduceAngle, sind } from './auxMath';
 import { returnTimeForNoEventCase, roundToNearestMinute } from './index';
-import { DateTime } from './types';
 
 /**
  * Calculates the solar transit time on a date at a given longitude (see AA
@@ -46,7 +46,8 @@ const sunTransit = (datetime: DateTime, L: number): DateTime => {
  * @returns {DateTime} Sunrise or sunset time.
  */
 // eslint-disable-next-line complexity,require-jsdoc
-const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: string, offset: number = 50 / 60): DateTime => {
+const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: RiseSetFlag, offset: number = 50 / 60):
+    DateTime => {
     const timezone = datetime.zone;
     let suntime = datetime.set({ hour: 0, minute: 0, second: 0 }).setZone('UTC', { keepLocalTime: true });
     const deltaT = DeltaT(suntime);
@@ -63,11 +64,8 @@ const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: string, of
     let m;
     if (flag === 'RISE') {
         m = m0 - H0 / 360;
-    } else if (flag === 'SET') {
-        m = m0 + H0 / 360;
     } else {
-        // TO DO
-        throw 'WTF';
+        m = m0 + H0 / 360;
     }
     let counter = 0;
     let DeltaM = 1;
@@ -95,19 +93,17 @@ const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: string, of
  * or too low ('SUN_LOW').
  * @param {DateTime} date The original date from which the event was calculated.
  * @param {string|undefined} errorCode The error code in case no event was found
- * @param {int} hour Hour to which the returned datetime should be set.
- * @param {int} minute Minute to which the returned datetime should be set.
+ * @param {number} hour Hour to which the returned datetime should be set.
+ * @param {number} minute Minute to which the returned datetime should be set.
  * @returns {(DateTime|string)} Time given by parameter 'hour' (+ correction for
  *     DST if applicable) or a string indicating why there was no event ('SUN_HIGH'
  *     or 'SUN_LOW')
  */
-const handleNoEventCase = (date: DateTime, errorCode: string | undefined, hour: number, minute: number = 0):
-    (DateTime | string) => {
+const handleNoEventCase = (date: DateTime, errorCode: NoEventCode, hour: number, minute: number = 0):
+    (DateTime | NoEventCode) => {
     if (returnTimeForNoEventCase) {
         const returnDate = date.set({ hour, minute, second: 0 }).plus({ minutes: date.isInDST ? 60 : 0 });
-        if (errorCode) {
-            (returnDate as DateTime).errorCode = errorCode;
-        }
+        (returnDate as DateTime).errorCode = errorCode;
         return returnDate;
     }
     return errorCode;
@@ -137,7 +133,7 @@ const approxLocalHourAngle = (phi: number, delta: number, offset: number): numbe
 /**
  * Normalizes a fractional time of day to be on the correct date.
  * @param {number} m Fractional time of day
- * @param {int} utcOffset Offset in minutes from UTC.
+ * @param {number} utcOffset Offset in minutes from UTC.
  * @returns {number} m Normalized m.
  */
 const normalizeM = (m: number, utcOffset: number): number => {
@@ -180,7 +176,7 @@ const sunTransitCorrection = (T: number, Theta0: number, deltaT: number, L: numb
  * @param {number} offset number of degrees below the horizon for the desired
  *     event (50/60 for sunrise/set, 6 for civil, 12 for nautical, 18 for
  *     astronomical dawn/dusk.
- * @returns {number} Currection for the sunrise/sunset time.
+ * @returns {number} Correction for the sunrise/sunset time.
  */
 const sunRiseSetCorrection =
     (T: number, Theta0: number, deltaT: number, phi: number, L: number, m: number, offset: number): number => {
@@ -201,7 +197,7 @@ const sunRiseSetCorrection =
  * @returns {number} Local hour angle of the sun.
  */
 const localHourAngle = (theta0: number, L: number, alpha: number): number => {
-    // Signflip for longitude
+    // Sign flip for longitude
     let H = reduceAngle(theta0 + L - alpha);
     if (H > 180) {
         H -= 360;

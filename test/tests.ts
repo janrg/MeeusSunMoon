@@ -1,7 +1,7 @@
 import * as MSS from '../src/index';
 import * as luxon from 'luxon';
+import { DateTime, MoonPhaseNumber } from '../src/types';
 import { locations, moonPhases } from './referenceTimes';
-import { DateTime } from '../src/types';
 
 // Reference source now rounds down. moment.diff truncates to integer, so by not
 // rounding here, the difference is the same it would be if we rounded down.
@@ -18,7 +18,7 @@ describe('the moon phases calculation', () => {
     ].forEach(({ name, phase }) => {
         describe(`for ${name}`, () => {
             it('should return the correct time in UTC', () => {
-                const moonTimes = MSS.yearMoonPhases(2016, phase);
+                const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber);
                 for (let i = 0; i < moonTimes.length; i++) {
                     const refTime = dateTimeFromReferenceTime(moonPhases[name][i]);
                     expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
@@ -27,7 +27,7 @@ describe('the moon phases calculation', () => {
 
             it('should return the correct time in a given timezone', () => {
                 const timezone = 'Pacific/Auckland';
-                const moonTimes = MSS.yearMoonPhases(2016, phase, timezone);
+                const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber, timezone);
                 for (let i = 0; i < moonTimes.length; i++) {
                     const refTime = dateTimeFromReferenceTime(moonPhases[name][i])
                         .setZone(timezone);
@@ -161,7 +161,7 @@ describe('the solar events calculations', () => {
                 it(`${name} (sun ${sunHigh ? 'high' : 'low'})`, () => {
                     MSS.options({ returnTimeForNoEventCase: true });
                     const event = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude) as DateTime;
-                    const result = MSS.formatCI(event, 'HH:mm');
+                    const result = MSS.format(event, 'HH:mm');
                     expect(result).toEqual(expectedTimeString);
                 });
             });

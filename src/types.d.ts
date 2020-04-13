@@ -15,3 +15,9 @@ export interface DateFormatKeys {
     SUN_HIGH: string;
     SUN_LOW: string;
 }
+
+export type MoonPhaseNumber = 0 | 1 | 2 | 3;
+
+export type RiseSetFlag = 'RISE' | 'SET';
+
+export type NoEventCode = 'SUN_HIGH' | 'SUN_LOW';

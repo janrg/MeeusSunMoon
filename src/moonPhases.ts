@@ -1,4 +1,5 @@
 import { cosd, sind } from './auxMath';
+import { MoonPhaseNumber } from './types';
 import { kToT } from './timeConversions';
 
 /**
@@ -6,11 +7,11 @@ import { kToT } from './timeConversions';
  * corresponding to k (see AA p350ff).
  * @param {number} k The approximate fractional number of new moons since
  *     2000-01-06.
- * @param {int} phase 0 -> new moon, 1 -> first quarter,
- *                    2 -> full moon, 3 -> last quarter.
+ * @param {number} phase 0 -> new moon, 1 -> first quarter,
+ *                       2 -> full moon, 3 -> last quarter.
  * @returns {number} Julian date in ephemeris time of the moon of given phase.
  */
-const truePhase = (k: number, phase: number): number => {
+const truePhase = (k: number, phase: MoonPhaseNumber): number => {
     k += phase / 4;
     const T = kToT(k);
     const E = eccentricityCorrection(T);
@@ -19,14 +20,13 @@ const truePhase = (k: number, phase: number): number => {
     const MPrime = moonMeanAnomaly(T, k);
     const F = moonArgumentOfLatitude(T, k);
     const Omega = moonAscendingNodeLongitude(T, k);
-    const A = planetaryArguments(T, k);
     let DeltaJDE = 0;
     if (phase === 0 || phase === 2) {
         DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
     } else if (phase === 1 || phase === 3) {
         DeltaJDE += quarterCorrections(E, M, MPrime, F, Omega, phase);
     }
-    DeltaJDE += commonCorrections(A);
+    DeltaJDE += commonCorrections(T, k);
     return JDE + DeltaJDE;
 };
 
@@ -98,41 +98,37 @@ const moonAscendingNodeLongitude = (T: number, k: number): number => 124.7746 - 
 const eccentricityCorrection = (T: number): number => 1 - 0.002516 * T - 0.0000074 * T ** 2;
 
 /**
- * Calculates the planetary arguments for the moon phases (see AA p351).
+ * Calculates the corrections to the planetary arguments for the moon phases
+ * that are common to all phases (see AA p352).
  * @param {number} T Fractional number of Julian centuries since
  *     2000-01-01T12:00:00Z.
  * @param {number} k The approximate fractional number of new moons since
  *     2000-01-06.
- * @returns {array} Planetary arguments for the moon phases.
- */
-const planetaryArguments = (T: number, k: number): Array<any> => [
-    0,
-    299.77 + 0.107408 * k - 0.009173 * T ** 2,
-    251.88 + 0.016321 * k,
-    251.83 + 26.651886 * k,
-    349.42 + 36.412478 * k,
-    84.66 + 18.206239 * k,
-    141.74 + 53.303771 * k,
-    207.14 + 2.453732 * k,
-    154.84 + 7.306860 * k,
-    34.52 + 27.261239 * k,
-    207.19 + 0.121824 * k,
-    291.34 + 1.844379 * k,
-    161.72 + 24.198154 * k,
-    239.56 + 25.513099 * k,
-    331.55 + 3.592518 * k];
-
-/**
- * Calculates the corrections to the planetary arguments for the moon phases
- * that are common to all phases (see AA p352).
- * @param {array} A Array of planetary arguments
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const commonCorrections = (A: Array<number>): number => 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) +
-    0.000164 * sind(A[3]) + 0.000126 * sind(A[4]) + 0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) +
-    0.000060 * sind(A[7]) + 0.000056 * sind(A[8]) + 0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) +
-    0.000040 * sind(A[11]) + 0.000037 * sind(A[12]) + 0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
+const commonCorrections = (T: number, k: number): number => {
+    const A = [
+        0,
+        299.77 + 0.107408 * k - 0.009173 * T ** 2,
+        251.88 + 0.016321 * k,
+        251.83 + 26.651886 * k,
+        349.42 + 36.412478 * k,
+        84.66 + 18.206239 * k,
+        141.74 + 53.303771 * k,
+        207.14 + 2.453732 * k,
+        154.84 + 7.306860 * k,
+        34.52 + 27.261239 * k,
+        207.19 + 0.121824 * k,
+        291.34 + 1.844379 * k,
+        161.72 + 24.198154 * k,
+        239.56 + 25.513099 * k,
+        331.55 + 3.592518 * k];
+    return 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) + 0.000164 * sind(A[3]) + 0.000126 * sind(A[4]) +
+        0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) + 0.000060 * sind(A[7]) + 0.000056 * sind(A[8]) +
+        0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) + 0.000040 * sind(A[11]) + 0.000037 * sind(A[12]) +
+        0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
+};
 
 /**
  * Calculates the corrections to the planetary arguments for the moon phases
@@ -142,7 +138,7 @@ const commonCorrections = (A: Array<number>): number => 0.000325 * sind(A[1]) + 
  * @param {number} MPrime Mean anomaly of the moon.
  * @param {number} F Argument of latitude of the moon.
  * @param {number} Omega Longitude of the ascending node of the lunar orbit.
- * @param {int} phase 0 -> new moon, 1 -> first quarter,
+ * @param {number} phase 0 -> new moon, 1 -> first quarter,
  *                    2 -> full moon, 3 -> last quarter.
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
@@ -198,12 +194,13 @@ const newMoonFullMoonCorrections = (E: number, M: number, MPrime: number, F: num
  * @param {number} MPrime Mean anomaly of the moon.
  * @param {number} F Argument of latitude of the moon.
  * @param {number} Omega Longitude of the ascending node of the lunar orbit.
- * @param {int} phase 0 -> new moon, 1 -> first quarter,
+ * @param {number} phase 0 -> new moon, 1 -> first quarter,
  *                    2 -> full moon, 3 -> last quarter.
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const quarterCorrections = (E: number, M: number, MPrime: number, F: number, Omega: number, phase: number): number => {
+const quarterCorrections = (E: number, M: number, MPrime: number, F: number, Omega: number, phase: MoonPhaseNumber):
+    number => {
     let DeltaJDE =
         -0.62801 * sind(MPrime) +
         0.17172 * E * sind(M) -

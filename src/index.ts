@@ -1,5 +1,5 @@
 import * as luxon from 'luxon';
-import { DateTime, MeeusSunMoonOptions } from './types';
+import { DateTime, MeeusSunMoonOptions, MoonPhaseNumber, NoEventCode } from './types';
 import { DeltaT, JDToDatetime, approxK } from './timeConversions';
 import { handleNoEventCase, sunRiseSet, sunTransit } from './sunTimes';
 import { truePhase } from './moonPhases';
@@ -35,7 +35,7 @@ const options = (options: MeeusSunMoonOptions) => {
  * @param {string} formatString Valid DateTime format string.
  * @returns {string} Formatted string with marker appended.
  */
-const formatCI = (datetime: DateTime, formatString: string): string => {
+const format = (datetime: DateTime, formatString: string): string => {
     const noEventCode = datetime.errorCode;
     let datestring = datetime.toFormat(formatString);
     if (dateFormatKeys[noEventCode]) {
@@ -55,7 +55,7 @@ const formatCI = (datetime: DateTime, formatString: string): string => {
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const sunrise = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const sunrise = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE');
     } catch (err) {
@@ -74,7 +74,7 @@ const sunrise = (datetime: DateTime, phi: number, L: number): (DateTime | string
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const sunset = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const sunset = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET');
     } catch (err) {
@@ -93,7 +93,7 @@ const sunset = (datetime: DateTime, phi: number, L: number): (DateTime | string)
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const civilDawn = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const civilDawn = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE', 6);
     } catch (err) {
@@ -112,7 +112,7 @@ const civilDawn = (datetime: DateTime, phi: number, L: number): (DateTime | stri
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const civilDusk = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const civilDusk = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET', 6);
     } catch (err) {
@@ -131,7 +131,7 @@ const civilDusk = (datetime: DateTime, phi: number, L: number): (DateTime | stri
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const nauticalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const nauticalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE', 12);
     } catch (err) {
@@ -150,7 +150,7 @@ const nauticalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | s
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const nauticalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const nauticalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET', 12);
     } catch (err) {
@@ -169,7 +169,7 @@ const nauticalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | s
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const astronomicalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const astronomicalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'RISE', 18);
     } catch (err) {
@@ -188,7 +188,7 @@ const astronomicalDawn = (datetime: DateTime, phi: number, L: number): (DateTime
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const astronomicalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | string) => {
+const astronomicalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
     try {
         return sunRiseSet(datetime, phi, L, 'SET', 18);
     } catch (err) {
@@ -209,13 +209,13 @@ const solarNoon = (datetime: DateTime, L: number): DateTime => sunTransit(dateti
 /**
  * Calculates all moons of the given phase that occur within the given
  * Gregorian calendar year.
- * @param {int} year Year for which moon phases should be calculated.
- * @param {int} phase 0 -> new moon, 1 -> first quarter,
+ * @param {number} year Year for which moon phases should be calculated.
+ * @param {number} phase 0 -> new moon, 1 -> first quarter,
  *                    2 -> full moon, 3 -> last quarter.
  * @param {string} timezone Optional: IANA timezone string.
  * @returns {array} Array of DateTime objects for moons of the given phase.
  */
-const yearMoonPhases = (year: number, phase: number, timezone: string = 'UTC'): Array<DateTime> => {
+const yearMoonPhases = (year: number, phase: MoonPhaseNumber, timezone: string = 'UTC'): Array<DateTime> => {
     const yearBegin = luxon.DateTime.fromObject(
         // eslint-disable-next-line sort-keys
         { year, month: 1, day: 1, hour: 0, minute: 0, second: 0, zone: timezone });
@@ -252,6 +252,6 @@ const yearMoonPhases = (year: number, phase: number, timezone: string = 'UTC'): 
 };
 
 export {
-    options, formatCI, sunrise, sunset, civilDawn, civilDusk, nauticalDawn, nauticalDusk, astronomicalDawn,
+    options, format, sunrise, sunset, civilDawn, civilDusk, nauticalDawn, nauticalDusk, astronomicalDawn,
     astronomicalDusk, solarNoon, yearMoonPhases, roundToNearestMinute, returnTimeForNoEventCase,
 };
