@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "Accurately calculate sunrise, sunset, and moon phases.",
   "main": "dist/meeussunmoon.min.js",
-  "module": "src/index.ts",
+  "module": "dist/meeussunmoon-es.min.js",
   "directories": {
     "test": "test"
   },
@@ -11,7 +11,7 @@
     "eslint": "eslint --ext .js --ext .ts .",
     "rollup": "rollup -c",
     "test": "jest",
-    "build": "npm run eslint && npm run test && npm run rollup"
+    "build": "npm run eslint && npm run test && npm run rollup -c"
   },
   "nyc": {
     "reporter": [
@@ -71,7 +71,7 @@
     "Brett Zamir"
   ],
   "engines": {
-    "node": ">= 6.13.1"
+    "node": ">= 10.0.0"
   },
   "license": "MIT",
   "bugs": {

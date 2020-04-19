@@ -64,7 +64,7 @@ the times returned are 0:30h, 1:00h, and 1:30h earlier / later, respectively,
 than for sunrise and sunset). Additionally, the DateTime object that is returned
 will have a property `errorCode` set to either `'SUN_HIGH'` or `'SUN_LOW'`.
 This way, the fact that this is not an actual sunrise/sunset time can be retrieved
-later, e.g. with `MeeusSunMoon.formatCI`
+later, e.g. with `MeeusSunMoon.format`
 (see below).
 
 ### Usage
@@ -138,13 +138,13 @@ quarter, `2` for full moon, `3` for last quarter.
 `timezone` Optional. IANA timezone string, e.g. `'Europe/London'`. If not
 specified, times are returned as UTC.
 
-#### formatCI
+#### format
 
-formatCI is a helper function of MeeusSunMoon which uses the custom property
+format is a helper function of MeeusSunMoon which uses the custom property
 attached to returned DateTimes in case of no event to provide an appropriately
 marked string representation. 
 
-By calling `MeeusSunMoon.formatCI(datetime, formatString)`, where `datetime`
+By calling `MeeusSunMoon.format(datetime, formatString)`, where `datetime`
 is a Luxon DateTime object as above and `formatString` uses the same syntax as
 `luxon.DateTime.toFormat()`, if the datetime was created with a key as described
 above, a string as defined by `dateFormatKeys` is appended to the formatted date.
@@ -154,7 +154,7 @@ above, a string as defined by `dateFormatKeys` is appended to the formatted date
 // datetime, latitude, and longitude correspond to a location and time which
 // experiences midnight sun
 MeeusSunMoon.sunrise(datetime, latitude, longitude)
-console.log(MeeusSunMoon.formatCI(sunrise, 'HH:mm'));
+console.log(MeeusSunMoon.format(sunrise, 'HH:mm'));
 >> 06:00‡
 ```
 
@@ -183,7 +183,16 @@ Tests can also be run in the console via `npm run node-test`.
 
 ### 3.0.0
 
-Switched to using Luxon instead of moment-timezone. Some API changes
+Switched to using Luxon instead of moment-timezone.
+
+###### Breaking Changes:
+- Inputs and outputs are now Luxon DateTime objects instead of moment objects
+- Browser support for browsers not supported by Luxon dropped. Any reasonably modern
+  browser will work. No version of IE is supported.
+- `formatCI` has been renamed to `format`
+- `options.returnTimeForPNMS` renamed to `options.returnTimeForNoEventCase`
+- keys for `options.dateFormatKeys` have been changed from `**` to `SUN_HIGH` and
+  from `--` to `SUN_LOW`
 
 ### 2.1.2
 
