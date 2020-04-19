@@ -49,15 +49,15 @@ const format = (datetime: DateTime, formatString: string): string => {
  * @param {DateTime} datetime Datetime for which sunrise is calculated. Should
  *     always contain a timezone or be in UTC, lone UTC offsets might lead to
  *     unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of sunrise or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const sunrise = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const sunrise = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'RISE');
+        return sunRiseSet(datetime, latitude, longitude, 'RISE');
     } catch (err) {
         return handleNoEventCase(datetime, err, 6);
     }
@@ -68,15 +68,15 @@ const sunrise = (datetime: DateTime, phi: number, L: number): (DateTime | NoEven
  * @param {DateTime} datetime Datetime for which sunset is calculated. Should
  *     always contain a timezone or be in UTC, lone UTC offsets might lead to
  *     unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of sunset or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const sunset = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const sunset = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'SET');
+        return sunRiseSet(datetime, latitude, longitude, 'SET');
     } catch (err) {
         return handleNoEventCase(datetime, err, 18);
     }
@@ -87,15 +87,15 @@ const sunset = (datetime: DateTime, phi: number, L: number): (DateTime | NoEvent
  * @param {DateTime} datetime Datetime for which civil dawn is calculated. Should
  *     always contain a timezone or be in UTC, lone UTC offsets might lead to
  *     unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of civil dawn or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const civilDawn = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const civilDawn = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'RISE', 6);
+        return sunRiseSet(datetime, latitude, longitude, 'RISE', 6);
     } catch (err) {
         return handleNoEventCase(datetime, err, 5, 30);
     }
@@ -106,15 +106,15 @@ const civilDawn = (datetime: DateTime, phi: number, L: number): (DateTime | NoEv
  * @param {DateTime} datetime Datetime for which civil dusk is calculated. Should
  *     always contain a timezone or be in UTC, lone UTC offsets might lead to
  *     unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of civil dusk or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const civilDusk = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const civilDusk = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'SET', 6);
+        return sunRiseSet(datetime, latitude, longitude, 'SET', 6);
     } catch (err) {
         return handleNoEventCase(datetime, err, 18, 30);
     }
@@ -125,15 +125,15 @@ const civilDusk = (datetime: DateTime, phi: number, L: number): (DateTime | NoEv
  * @param {DateTime} datetime Datetime for which nautical dawn is calculated.
  *     Should always contain a timezone or be in UTC, lone UTC offsets might
  *     lead to unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of nautical dawn or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const nauticalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const nauticalDawn = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'RISE', 12);
+        return sunRiseSet(datetime, latitude, longitude, 'RISE', 12);
     } catch (err) {
         return handleNoEventCase(datetime, err, 5);
     }
@@ -144,15 +144,15 @@ const nauticalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | N
  * @param {DateTime} datetime Datetime for which nautical dusk is calculated.
  *     Should always contain a timezone or be in UTC, lone UTC offsets might
  *     lead to unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of nautical dusk or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const nauticalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const nauticalDusk = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'SET', 12);
+        return sunRiseSet(datetime, latitude, longitude, 'SET', 12);
     } catch (err) {
         return handleNoEventCase(datetime, err, 19);
     }
@@ -163,15 +163,15 @@ const nauticalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | N
  * @param {DateTime} datetime Datetime for which astronomical dawn is calculated.
  *     Should always contain a timezone or be in UTC, lone UTC offsets might
  *     lead to unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of astronomical dawn or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const astronomicalDawn = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const astronomicalDawn = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'RISE', 18);
+        return sunRiseSet(datetime, latitude, longitude, 'RISE', 18);
     } catch (err) {
         return handleNoEventCase(datetime, err, 4, 30);
     }
@@ -182,15 +182,15 @@ const astronomicalDawn = (datetime: DateTime, phi: number, L: number): (DateTime
  * @param {DateTime} datetime Datetime for which astronomical dusk is calculated.
  *     Should always contain a timezone or be in UTC, lone UTC offsets might
  *     lead to unexpected behaviour.
- * @param {number} phi Latitude of target location.
- * @param {number} L longitude of target location.
+ * @param {number} latitude Latitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {(DateTime|string)} Time of astronomical dusk or a string indicating that no
  *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
  *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
  */
-const astronomicalDusk = (datetime: DateTime, phi: number, L: number): (DateTime | NoEventCode) => {
+const astronomicalDusk = (datetime: DateTime, latitude: number, longitude: number): (DateTime | NoEventCode) => {
     try {
-        return sunRiseSet(datetime, phi, L, 'SET', 18);
+        return sunRiseSet(datetime, latitude, longitude, 'SET', 18);
     } catch (err) {
         return handleNoEventCase(datetime, err, 19, 30);
     }
@@ -201,10 +201,10 @@ const astronomicalDusk = (datetime: DateTime, phi: number, L: number): (DateTime
  * @param {DateTime} datetime Datetime for which solar noon is calculated. Should
  *     always contain a timezone or be in UTC, lone UTC offsets might lead to
  *     unexpected behaviour.
- * @param {number} L longitude of target location.
+ * @param {number} longitude longitude of target location.
  * @returns {DateTime} Time of solar noon at the given longitude.
  */
-const solarNoon = (datetime: DateTime, L: number): DateTime => sunTransit(datetime, L);
+const solarNoon = (datetime: DateTime, longitude: number): DateTime => sunTransit(datetime, longitude);
 
 /**
  * Calculates all moons of the given phase that occur within the given
@@ -236,9 +236,9 @@ const yearMoonPhases = (year: number, phase: MoonPhaseNumber, timezone: string =
         // now use that to calculate deltaT
         deltaT = DeltaT(moonDatetime);
         if (deltaT > 0) {
-            moonDatetime = moonDatetime.minus({ seconds: Math.abs(deltaT) });
+            moonDatetime = moonDatetime.minus({ seconds: Math.round(Math.abs(deltaT)) });
         } else {
-            moonDatetime = moonDatetime.plus({ seconds: Math.abs(deltaT) });
+            moonDatetime = moonDatetime.plus({ seconds: Math.round(Math.abs(deltaT)) });
         }
         if (roundToNearestMinute) {
             moonDatetime = moonDatetime.plus({ seconds: 30 }).set({ second: 0 });

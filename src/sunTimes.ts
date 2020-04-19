@@ -13,7 +13,8 @@ import { returnTimeForNoEventCase, roundToNearestMinute } from './index';
  */
 const sunTransit = (datetime: DateTime, L: number): DateTime => {
     const timezone = datetime.zone;
-    let transit = datetime.set({ hour: 0, minute: 0, second: 0 }).setZone('UTC', { keepLocalTime: true });
+    let transit = datetime.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+        .setZone('UTC', { keepLocalTime: true });
     const deltaT = DeltaT(transit);
     const T = datetimeToT(transit);
     const Theta0 = apparentSiderealTimeGreenwich(T);
@@ -49,7 +50,8 @@ const sunTransit = (datetime: DateTime, L: number): DateTime => {
 const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: RiseSetFlag, offset: number = 50 / 60):
     DateTime => {
     const timezone = datetime.zone;
-    let suntime = datetime.set({ hour: 0, minute: 0, second: 0 }).setZone('UTC', { keepLocalTime: true });
+    let suntime = datetime.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+        .setZone('UTC', { keepLocalTime: true });
     const deltaT = DeltaT(suntime);
     const T = datetimeToT(suntime);
     const Theta0 = apparentSiderealTimeGreenwich(T);
