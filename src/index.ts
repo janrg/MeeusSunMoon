@@ -1,5 +1,5 @@
 import * as luxon from 'luxon';
-import { DateTime, MeeusSunMoonOptions, MoonPhaseNumber, NoEventCode } from './types';
+import { DateTime, MeeusSunMoonSettings, MoonPhaseNumber, NoEventCode } from './types';
 import { DeltaT, JDToDatetime, approxK } from './timeConversions';
 import { handleNoEventCase, sunRiseSet, sunTransit } from './sunTimes';
 import { truePhase } from './moonPhases';
@@ -12,19 +12,19 @@ let dateFormatKeys = {
 };
 
 /**
- * Sets options (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
+ * Settings (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
  * module.
- * @param {object} options Options to be set.
+ * @param {object} settings Options to be set.
  */
-const options = (options: MeeusSunMoonOptions) => {
-    if (typeof options.roundToNearestMinute === 'boolean') {
-        roundToNearestMinute = options.roundToNearestMinute;
+const settings = (settings: MeeusSunMoonSettings) => {
+    if (typeof settings.roundToNearestMinute === 'boolean') {
+        roundToNearestMinute = settings.roundToNearestMinute;
     }
-    if (typeof options.returnTimeForNoEventCase === 'boolean') {
-        returnTimeForNoEventCase = options.returnTimeForNoEventCase;
+    if (typeof settings.returnTimeForNoEventCase === 'boolean') {
+        returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
     }
-    if (typeof options.dateFormatKeys === 'object') {
-        dateFormatKeys = options.dateFormatKeys;
+    if (typeof settings.dateFormatKeys === 'object') {
+        dateFormatKeys = settings.dateFormatKeys;
     }
 };
 
@@ -252,6 +252,6 @@ const yearMoonPhases = (year: number, phase: MoonPhaseNumber, timezone: string =
 };
 
 export {
-    options, format, sunrise, sunset, civilDawn, civilDusk, nauticalDawn, nauticalDusk, astronomicalDawn,
+    settings, format, sunrise, sunset, civilDawn, civilDusk, nauticalDawn, nauticalDusk, astronomicalDawn,
     astronomicalDusk, solarNoon, yearMoonPhases, roundToNearestMinute, returnTimeForNoEventCase,
 };

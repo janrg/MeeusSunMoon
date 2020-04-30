@@ -5,7 +5,7 @@ export class DateTime extends LuxonDateTime {
     errorCode?: string;
 }
 
-export interface MeeusSunMoonOptions {
+export interface MeeusSunMoonSettings {
     roundToNearestMinute?: boolean;
     returnTimeForNoEventCase?: boolean;
     dateFormatKeys?: DateFormatKeys;

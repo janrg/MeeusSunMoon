@@ -5,7 +5,7 @@ import { locations, moonPhases } from './referenceTimes';
 
 // Reference source now rounds down. moment.diff truncates to integer, so by not
 // rounding here, the difference is the same it would be if we rounded down.
-MSS.options({ roundToNearestMinute: false });
+MSS.settings({ roundToNearestMinute: false });
 
 const maxError = 1;
 
@@ -149,7 +149,7 @@ describe('the solar events calculations', () => {
         describe('and returnTimeForNoEventCase is false', () => {
             cases.forEach(({ name, method, sunHigh }) => {
                 it(`${name} (sun ${sunHigh ? 'high' : 'low'})`, () => {
-                    MSS.options({ returnTimeForNoEventCase: false });
+                    MSS.settings({ returnTimeForNoEventCase: false });
                     const result = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude);
                     expect(result).toEqual(sunHigh ? 'SUN_HIGH' : 'SUN_LOW');
                 });
@@ -159,7 +159,7 @@ describe('the solar events calculations', () => {
         describe('and returnTimeForNoEventCase is true', () => {
             cases.forEach(({ name, method, sunHigh, expectedTimeString }) => {
                 it(`${name} (sun ${sunHigh ? 'high' : 'low'})`, () => {
-                    MSS.options({ returnTimeForNoEventCase: true });
+                    MSS.settings({ returnTimeForNoEventCase: true });
                     const event = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude) as DateTime;
                     const result = MSS.format(event, 'HH:mm');
                     expect(result).toEqual(expectedTimeString);

@@ -999,19 +999,19 @@
         SUN_LOW: '†',
     };
     /**
-     * Sets options (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
+     * Settings (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
      * module.
-     * @param {object} options Options to be set.
+     * @param {object} settings Options to be set.
      */
-    const options = (options) => {
-        if (typeof options.roundToNearestMinute === 'boolean') {
-            exports.roundToNearestMinute = options.roundToNearestMinute;
+    const settings = (settings) => {
+        if (typeof settings.roundToNearestMinute === 'boolean') {
+            exports.roundToNearestMinute = settings.roundToNearestMinute;
         }
-        if (typeof options.returnTimeForNoEventCase === 'boolean') {
-            exports.returnTimeForNoEventCase = options.returnTimeForNoEventCase;
+        if (typeof settings.returnTimeForNoEventCase === 'boolean') {
+            exports.returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
         }
-        if (typeof options.dateFormatKeys === 'object') {
-            dateFormatKeys = options.dateFormatKeys;
+        if (typeof settings.dateFormatKeys === 'object') {
+            dateFormatKeys = settings.dateFormatKeys;
         }
     };
     /**
@@ -1243,7 +1243,7 @@
     exports.format = format;
     exports.nauticalDawn = nauticalDawn;
     exports.nauticalDusk = nauticalDusk;
-    exports.options = options;
+    exports.settings = settings;
     exports.solarNoon = solarNoon;
     exports.sunrise = sunrise;
     exports.sunset = sunset;

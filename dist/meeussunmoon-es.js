@@ -995,19 +995,19 @@ let dateFormatKeys = {
     SUN_LOW: '†',
 };
 /**
- * Sets options (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
+ * Settings (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
  * module.
- * @param {object} options Options to be set.
+ * @param {object} settings Options to be set.
  */
-const options = (options) => {
-    if (typeof options.roundToNearestMinute === 'boolean') {
-        roundToNearestMinute = options.roundToNearestMinute;
+const settings = (settings) => {
+    if (typeof settings.roundToNearestMinute === 'boolean') {
+        roundToNearestMinute = settings.roundToNearestMinute;
     }
-    if (typeof options.returnTimeForNoEventCase === 'boolean') {
-        returnTimeForNoEventCase = options.returnTimeForNoEventCase;
+    if (typeof settings.returnTimeForNoEventCase === 'boolean') {
+        returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
     }
-    if (typeof options.dateFormatKeys === 'object') {
-        dateFormatKeys = options.dateFormatKeys;
+    if (typeof settings.dateFormatKeys === 'object') {
+        dateFormatKeys = settings.dateFormatKeys;
     }
 };
 /**
@@ -1232,4 +1232,4 @@ const yearMoonPhases = (year, phase, timezone = 'UTC') => {
     return phaseTimes;
 };
 
-export { astronomicalDawn, astronomicalDusk, civilDawn, civilDusk, format, nauticalDawn, nauticalDusk, options, returnTimeForNoEventCase, roundToNearestMinute, solarNoon, sunrise, sunset, yearMoonPhases };
+export { astronomicalDawn, astronomicalDusk, civilDawn, civilDusk, format, nauticalDawn, nauticalDusk, returnTimeForNoEventCase, roundToNearestMinute, settings, solarNoon, sunrise, sunset, yearMoonPhases };
