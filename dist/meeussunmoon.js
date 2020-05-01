@@ -232,6 +232,24 @@
      */
     const kToT = (k) => k / 1236.85;
 
+    let roundToNearestMinute = false;
+    let returnTimeForNoEventCase = false;
+    let dateFormatKeys = {
+        SUN_HIGH: '‡',
+        SUN_LOW: '†',
+    };
+    const settings = (settings) => {
+        if (typeof settings.roundToNearestMinute === 'boolean') {
+            roundToNearestMinute = settings.roundToNearestMinute;
+        }
+        if (typeof settings.returnTimeForNoEventCase === 'boolean') {
+            returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
+        }
+        if (typeof settings.dateFormatKeys === 'object') {
+            dateFormatKeys = settings.dateFormatKeys;
+        }
+    };
+
     /** See AA p144 */
     const sunMeanAnomaly = [357.52772, 35999.050340, -0.0001603, -1 / 300000];
     /** See AA p163 Eq 25.2 */
@@ -341,7 +359,7 @@
         const DeltaM = sunTransitCorrection(T, Theta0, deltaT, L, m);
         m += DeltaM;
         transit = transit.plus({ seconds: Math.floor(m * 3600 * 24 + 0.5) });
-        if (exports.roundToNearestMinute) {
+        if (roundToNearestMinute) {
             transit = transit.plus({ seconds: 30 }).set({ second: 0 });
         }
         return transit.setZone(timezone);
@@ -396,7 +414,7 @@
         else {
             suntime = suntime.minus({ seconds: Math.floor(m * 3600 * 24 + 0.5) });
         }
-        if (exports.roundToNearestMinute) {
+        if (roundToNearestMinute) {
             suntime = suntime.plus({ seconds: 30 }).set({ second: 0 });
         }
         return suntime.setZone(timezone);
@@ -415,7 +433,7 @@
      *     or 'SUN_LOW')
      */
     const handleNoEventCase = (date, errorCode, hour, minute = 0) => {
-        if (exports.returnTimeForNoEventCase) {
+        if (returnTimeForNoEventCase) {
             const returnDate = date.set({ hour, minute, second: 0 }).plus({ minutes: date.isInDST ? 60 : 0 });
             returnDate.errorCode = errorCode;
             return returnDate;
@@ -992,28 +1010,6 @@
         return DeltaJDE;
     };
 
-    exports.roundToNearestMinute = false;
-    exports.returnTimeForNoEventCase = false;
-    let dateFormatKeys = {
-        SUN_HIGH: '‡',
-        SUN_LOW: '†',
-    };
-    /**
-     * Settings (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
-     * module.
-     * @param {object} settings Options to be set.
-     */
-    const settings = (settings) => {
-        if (typeof settings.roundToNearestMinute === 'boolean') {
-            exports.roundToNearestMinute = settings.roundToNearestMinute;
-        }
-        if (typeof settings.returnTimeForNoEventCase === 'boolean') {
-            exports.returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
-        }
-        if (typeof settings.dateFormatKeys === 'object') {
-            dateFormatKeys = settings.dateFormatKeys;
-        }
-    };
     /**
      * Uses the extra information encoded into the DateTime object for dates without
      * a sun event if returnTimeForNoEventCase is true to mark the output string.
@@ -1225,7 +1221,7 @@
             else {
                 moonDatetime = moonDatetime.plus({ seconds: Math.round(Math.abs(deltaT)) });
             }
-            if (exports.roundToNearestMinute) {
+            if (roundToNearestMinute) {
                 moonDatetime = moonDatetime.plus({ seconds: 30 }).set({ second: 0 });
             }
             if (moonDatetime >= yearBegin && moonDatetime < yearEnd) {

@@ -2,16 +2,17 @@
   "name": "meeussunmoon",
   "version": "3.0.0",
   "description": "Accurately calculate sunrise, sunset, and moon phases.",
-  "main": "dist/meeussunmoon.min.js",
-  "module": "dist/meeussunmoon-es.min.js",
+  "main": "dist/meeussunmoon.js",
+  "module": "dist/meeussunmoon.mjs",
+  "types": "dist/meeussunmoon.d.ts",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "eslint": "eslint --ext .js --ext .ts .",
+    "lint": "eslint --ext .js --ext .ts .",
     "rollup": "rollup -c",
     "test": "jest",
-    "build": "npm run eslint && npm run test && npm run rollup -c"
+    "build": "npm run lint && npm run test && npm run rollup -c"
   },
   "nyc": {
     "reporter": [
@@ -23,8 +24,7 @@
     ]
   },
   "dependencies": {
-    "luxon": "^1.23.0",
-    "rollup-plugin-typescript2": "^0.27.0"
+    "luxon": "^1.23.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",

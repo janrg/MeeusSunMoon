@@ -1,32 +1,9 @@
 import * as luxon from 'luxon';
-import { DateTime, MeeusSunMoonSettings, MoonPhaseNumber, NoEventCode } from './types';
+import { DateTime, MoonPhaseNumber, NoEventCode } from './types';
 import { DeltaT, JDToDatetime, approxK } from './timeConversions';
+import { dateFormatKeys, roundToNearestMinute, settings } from './settings';
 import { handleNoEventCase, sunRiseSet, sunTransit } from './sunTimes';
 import { truePhase } from './moonPhases';
-
-let roundToNearestMinute = false;
-let returnTimeForNoEventCase = false;
-let dateFormatKeys = {
-    SUN_HIGH: '‡',
-    SUN_LOW: '†',
-};
-
-/**
- * Settings (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
- * module.
- * @param {object} settings Options to be set.
- */
-const settings = (settings: MeeusSunMoonSettings) => {
-    if (typeof settings.roundToNearestMinute === 'boolean') {
-        roundToNearestMinute = settings.roundToNearestMinute;
-    }
-    if (typeof settings.returnTimeForNoEventCase === 'boolean') {
-        returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
-    }
-    if (typeof settings.dateFormatKeys === 'object') {
-        dateFormatKeys = settings.dateFormatKeys;
-    }
-};
 
 /**
  * Uses the extra information encoded into the DateTime object for dates without
@@ -252,6 +229,6 @@ const yearMoonPhases = (year: number, phase: MoonPhaseNumber, timezone: string =
 };
 
 export {
-    settings, format, sunrise, sunset, civilDawn, civilDusk, nauticalDawn, nauticalDusk, astronomicalDawn,
-    astronomicalDusk, solarNoon, yearMoonPhases, roundToNearestMinute, returnTimeForNoEventCase,
+    format, sunrise, sunset, civilDawn, civilDusk, nauticalDawn, nauticalDusk, astronomicalDawn, astronomicalDusk,
+    solarNoon, yearMoonPhases, settings,
 };

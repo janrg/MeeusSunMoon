@@ -1,5 +1,5 @@
 import { terser } from 'rollup-plugin-terser';
-import typescript from 'rollup-plugin-typescript2';
+import typescript from '@rollup/plugin-typescript';
 
 const copyrightNotice = `/**
  * @license MeeusSunMoon v3.0.0
@@ -19,16 +19,12 @@ const rollupConfig = (minify, format) => {
         input: 'src/index.ts',
         output: {
             banner: copyrightNotice,
-            file: `dist/meeussunmoon${
-                format === 'es' ? '-es' : ''
-            }${minify ? '.min' : ''}.js`,
+            file: `dist/meeussunmoon${minify ? '.min' : ''}.${format === 'es' ? 'm' : ''}js`,
             format,
             name: 'MeeusSunMoon',
             globals: format === 'es' ? {} : { luxon: 'luxon' },
         },
-        plugins: [typescript({
-            typescript: require('typescript'),
-        })],
+        plugins: [typescript()],
     };
     if (minify) {
         config.plugins.push(terser());

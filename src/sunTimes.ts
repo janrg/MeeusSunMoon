@@ -2,7 +2,7 @@ import * as constants from './constants';
 import { DateTime, NoEventCode, RiseSetFlag } from './types';
 import { DeltaT, datetimeToT } from './timeConversions';
 import { cosd, interpolateFromThree, polynomial, rad2deg, reduceAngle, sind } from './auxMath';
-import { returnTimeForNoEventCase, roundToNearestMinute } from './index';
+import { returnTimeForNoEventCase, roundToNearestMinute } from './settings';
 
 /**
  * Calculates the solar transit time on a date at a given longitude (see AA

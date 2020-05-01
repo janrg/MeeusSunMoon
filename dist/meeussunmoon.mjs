@@ -228,6 +228,24 @@ const approxK = (datetime) => {
  */
 const kToT = (k) => k / 1236.85;
 
+let roundToNearestMinute = false;
+let returnTimeForNoEventCase = false;
+let dateFormatKeys = {
+    SUN_HIGH: '‡',
+    SUN_LOW: '†',
+};
+const settings = (settings) => {
+    if (typeof settings.roundToNearestMinute === 'boolean') {
+        roundToNearestMinute = settings.roundToNearestMinute;
+    }
+    if (typeof settings.returnTimeForNoEventCase === 'boolean') {
+        returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
+    }
+    if (typeof settings.dateFormatKeys === 'object') {
+        dateFormatKeys = settings.dateFormatKeys;
+    }
+};
+
 /** See AA p144 */
 const sunMeanAnomaly = [357.52772, 35999.050340, -0.0001603, -1 / 300000];
 /** See AA p163 Eq 25.2 */
@@ -988,28 +1006,6 @@ const quarterCorrections = (E, M, MPrime, F, Omega, phase) => {
     return DeltaJDE;
 };
 
-let roundToNearestMinute = false;
-let returnTimeForNoEventCase = false;
-let dateFormatKeys = {
-    SUN_HIGH: '‡',
-    SUN_LOW: '†',
-};
-/**
- * Settings (roundToNearestMinute, returnTimeForNoEventCase, dateFormatKey) for the
- * module.
- * @param {object} settings Options to be set.
- */
-const settings = (settings) => {
-    if (typeof settings.roundToNearestMinute === 'boolean') {
-        roundToNearestMinute = settings.roundToNearestMinute;
-    }
-    if (typeof settings.returnTimeForNoEventCase === 'boolean') {
-        returnTimeForNoEventCase = settings.returnTimeForNoEventCase;
-    }
-    if (typeof settings.dateFormatKeys === 'object') {
-        dateFormatKeys = settings.dateFormatKeys;
-    }
-};
 /**
  * Uses the extra information encoded into the DateTime object for dates without
  * a sun event if returnTimeForNoEventCase is true to mark the output string.
@@ -1232,4 +1228,4 @@ const yearMoonPhases = (year, phase, timezone = 'UTC') => {
     return phaseTimes;
 };
 
-export { astronomicalDawn, astronomicalDusk, civilDawn, civilDusk, format, nauticalDawn, nauticalDusk, returnTimeForNoEventCase, roundToNearestMinute, settings, solarNoon, sunrise, sunset, yearMoonPhases };
+export { astronomicalDawn, astronomicalDusk, civilDawn, civilDusk, format, nauticalDawn, nauticalDusk, settings, solarNoon, sunrise, sunset, yearMoonPhases };
