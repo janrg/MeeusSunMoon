@@ -10,7 +10,7 @@
   },
   "scripts": {
     "lint": "eslint --ext .js --ext .ts .",
-    "rollup": "rollup -c",
+    "rollup": "rollup -c && node ./mjscopy.js",
     "test": "jest",
     "build": "npm run lint && npm run test && npm run rollup -c"
   },
