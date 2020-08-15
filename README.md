@@ -138,6 +138,12 @@ quarter, `2` for full moon, `3` for last quarter.
 `timezone` Optional. IANA timezone string, e.g. `'Europe/London'`. If not
 specified, times are returned as UTC.
 
+```js
+MeeusSunMoon.yearAllMoonPhases(year, timezone);
+```
+
+Returns an array of `{ datetime, phase }` objects that corresponds to all moon phases in the given year in chronological order.
+
 #### format
 
 format is a helper function of MeeusSunMoon which uses the custom property
@@ -185,13 +191,16 @@ Tests can also be run in the console via `npm run node-test`.
 
 Switched to using Luxon instead of moment-timezone.
 
+Added function `yearAllMoonPhases`.
+
 ###### Breaking Changes:
 - Inputs and outputs are now Luxon DateTime objects instead of moment objects
 - Browser support for browsers not supported by Luxon dropped. Any reasonably modern
   browser will work. No version of IE is supported.
 - `formatCI` has been renamed to `format`
-- `options.returnTimeForPNMS` renamed to `options.returnTimeForNoEventCase`
-- keys for `options.dateFormatKeys` have been changed from `**` to `SUN_HIGH` and
+- `options` renamed to `settings`
+- `options.returnTimeForPNMS` renamed to `settings.returnTimeForNoEventCase`
+- keys for `settings.dateFormatKeys` have been changed from `**` to `SUN_HIGH` and
   from `--` to `SUN_LOW`
 
 ### 2.1.2
