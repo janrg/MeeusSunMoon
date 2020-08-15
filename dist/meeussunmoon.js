@@ -1231,6 +1231,12 @@
         }
         return phaseTimes;
     };
+    const yearAllMoonPhases = (year, timezone = 'UTC') => [
+        ...yearMoonPhases(year, 0, timezone).map((datetime) => ({ datetime, phase: 0 })),
+        ...yearMoonPhases(year, 1, timezone).map((datetime) => ({ datetime, phase: 1 })),
+        ...yearMoonPhases(year, 2, timezone).map((datetime) => ({ datetime, phase: 2 })),
+        ...yearMoonPhases(year, 3, timezone).map((datetime) => ({ datetime, phase: 3 })),
+    ].sort((a, b) => a.datetime.valueOf() - b.datetime.valueOf());
 
     exports.astronomicalDawn = astronomicalDawn;
     exports.astronomicalDusk = astronomicalDusk;
@@ -1243,6 +1249,7 @@
     exports.solarNoon = solarNoon;
     exports.sunrise = sunrise;
     exports.sunset = sunset;
+    exports.yearAllMoonPhases = yearAllMoonPhases;
     exports.yearMoonPhases = yearMoonPhases;
 
     Object.defineProperty(exports, '__esModule', { value: true });

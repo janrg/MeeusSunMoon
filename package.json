@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "Accurately calculate sunrise, sunset, and moon phases.",
   "main": "dist/meeussunmoon.js",
-  "module": "dist/meeussunmoon.mjs",
+  "module": "dist/meeussunmoon.m.js",
   "types": "dist/meeussunmoon.d.ts",
   "directories": {
     "test": "test"
@@ -45,6 +45,7 @@
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-standard": "4.0.1",
     "jest": "^25.3.0",
+    "jest-sorted": "^1.0.6",
     "rollup": "2.6.1",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-terser": "^5.3.0",

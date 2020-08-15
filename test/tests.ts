@@ -37,6 +37,25 @@ describe('the moon phases calculation', () => {
             });
         });
     });
+
+    it('yearAllMoonPhases should return all moon phases in the correct order', () => {
+        const moonPhases = MSS.yearAllMoonPhases(2016);
+        const newMoons = MSS.yearMoonPhases(2016, 0);
+        const firstQuarterMoons = MSS.yearMoonPhases(2016, 1);
+        const fullMoons = MSS.yearMoonPhases(2016, 2);
+        const lastQuarterMoons = MSS.yearMoonPhases(2016, 3);
+
+        expect(moonPhases.filter((entry) => entry.phase === 0).map((entry) => entry.datetime))
+            .toEqual(newMoons);
+        expect(moonPhases.filter((entry) => entry.phase === 1).map((entry) => entry.datetime))
+            .toEqual(firstQuarterMoons);
+        expect(moonPhases.filter((entry) => entry.phase === 2).map((entry) => entry.datetime))
+            .toEqual(fullMoons);
+        expect(moonPhases.filter((entry) => entry.phase === 3).map((entry) => entry.datetime))
+            .toEqual(lastQuarterMoons);
+        // @ts-ignore
+        expect(moonPhases).toBeSortedBy('datetime', { coerce: true });
+    });
 });
 
 describe('the solar events calculations', () => {

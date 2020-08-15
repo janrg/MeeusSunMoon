@@ -16,6 +16,11 @@ export interface DateFormatKeys {
     SUN_LOW: string;
 }
 
+export interface MoonPhase {
+    datetime: LuxonDateTime,
+    phase: MoonPhaseNumber,
+}
+
 export type MoonPhaseNumber = 0 | 1 | 2 | 3;
 
 export type RiseSetFlag = 'RISE' | 'SET';

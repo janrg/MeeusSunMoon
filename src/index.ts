@@ -1,5 +1,5 @@
 import * as luxon from 'luxon';
-import { DateTime, MoonPhaseNumber, NoEventCode } from './types';
+import { DateTime, MoonPhase, MoonPhaseNumber, NoEventCode } from './types';
 import { DeltaT, JDToDatetime, approxK } from './timeConversions';
 import { dateFormatKeys, roundToNearestMinute, settings } from './settings';
 import { handleNoEventCase, sunRiseSet, sunTransit } from './sunTimes';
@@ -228,7 +228,14 @@ const yearMoonPhases = (year: number, phase: MoonPhaseNumber, timezone: string =
     return phaseTimes;
 };
 
+const yearAllMoonPhases = (year: number, timezone: string = 'UTC'): Array<MoonPhase> => [
+    ...yearMoonPhases(year, 0, timezone).map((datetime) => ({ datetime, phase: 0 as MoonPhaseNumber })),
+    ...yearMoonPhases(year, 1, timezone).map((datetime) => ({ datetime, phase: 1 as MoonPhaseNumber })),
+    ...yearMoonPhases(year, 2, timezone).map((datetime) => ({ datetime, phase: 2 as MoonPhaseNumber })),
+    ...yearMoonPhases(year, 3, timezone).map((datetime) => ({ datetime, phase: 3 as MoonPhaseNumber })),
+].sort((a, b) => a.datetime.valueOf() - b.datetime.valueOf());
+
 export {
     format, sunrise, sunset, civilDawn, civilDusk, nauticalDawn, nauticalDusk, astronomicalDawn, astronomicalDusk,
-    solarNoon, yearMoonPhases, settings,
+    solarNoon, yearMoonPhases, yearAllMoonPhases, settings,
 };

@@ -1,5 +1,5 @@
 import { DateTime as LuxonDateTime } from 'luxon';
-import { DateFormatKeys } from "../src/types";
+import {DateFormatKeys, MoonPhase} from "../src/types";
 
 export class DateTime extends LuxonDateTime {
     errorCode?: string;
@@ -15,26 +15,28 @@ export type NoEventCode = 'SUN_HIGH' | 'SUN_LOW';
 
 export type MoonPhaseNumber = 0 | 1 | 2 | 3;
 
-declare function sunrise(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function sunrise(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function sunset(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function sunset(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function solarNoon(datetime: DateTime, longitude: number): DateTime;
+export function solarNoon(datetime: DateTime, longitude: number): DateTime;
 
-declare function civilDawn(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function civilDawn(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function civilDusk(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function civilDusk(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function nauticalDawn(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function nauticalDawn(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function nauticalDusk(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function nauticalDusk(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function astronomicalDawn(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function astronomicalDawn(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function astronomicalDusk(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
+export function astronomicalDusk(datetime: DateTime, latitude: number, longitude: number): DateTime | NoEventCode;
 
-declare function yearMoonPhases(year: number, phase: MoonPhaseNumber, timezone?: string): Array<DateTime>;
+export function yearMoonPhases(year: number, phase: MoonPhaseNumber, timezone?: string): Array<DateTime>;
 
-declare function format(datetime: DateTime, formatString: string): string;
+export function yearAllMoonPhases(year: number, timezone?: string): Array<MoonPhase>;
 
-declare function settings(settings: MeeusSunMoonSettings): void;
+export function format(datetime: DateTime, formatString: string): string;
+
+export function settings(settings: MeeusSunMoonSettings): void;
