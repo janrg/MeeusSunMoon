@@ -7,7 +7,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('luxon')) :
     typeof define === 'function' && define.amd ? define(['exports', 'luxon'], factory) :
-    (global = global || self, factory(global.MeeusSunMoon = {}, global.luxon));
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MeeusSunMoon = {}, global.luxon));
 }(this, (function (exports, luxon) { 'use strict';
 
     /**
