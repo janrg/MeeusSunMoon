@@ -151,18 +151,66 @@ describe('the solar events calculations', () => {
         const dateSunLow = luxon.DateTime.fromISO('2016-07-01T12:00:00', { zone: 'Pacific/Auckland' });
 
         const cases = [
-            { name: 'sunrise', method: MSS.sunrise, sunHigh: true, expectedTimeString: '07:00‡' },
-            { name: 'sunrise', method: MSS.sunrise, sunHigh: false, expectedTimeString: '06:00†' },
-            { name: 'sunset', method: MSS.sunset, sunHigh: true, expectedTimeString: '19:00‡' },
-            { name: 'sunset', method: MSS.sunset, sunHigh: false, expectedTimeString: '18:00†' },
-            { name: 'civil dawn', method: MSS.civilDawn, sunHigh: true, expectedTimeString: '06:30‡' },
-            { name: 'civil dawn', method: MSS.civilDawn, sunHigh: false, expectedTimeString: '05:30†' },
-            { name: 'civil dusk', method: MSS.civilDusk, sunHigh: true, expectedTimeString: '19:30‡' },
-            { name: 'civil dusk', method: MSS.civilDusk, sunHigh: false, expectedTimeString: '18:30†' },
-            { name: 'nautical dawn', method: MSS.nauticalDawn, sunHigh: true, expectedTimeString: '06:00‡' },
-            { name: 'nautical dusk', method: MSS.nauticalDusk, sunHigh: true, expectedTimeString: '20:00‡' },
-            { name: 'astronomical dawn', method: MSS.astronomicalDawn, sunHigh: true, expectedTimeString: '05:30‡' },
-            { name: 'astronomica dusk', method: MSS.astronomicalDusk, sunHigh: true, expectedTimeString: '20:30‡' },
+            { name: 'sunrise',
+                method: MSS.sunrise,
+                sunHigh: true,
+                expectedTimeString: '07:00‡',
+                expectedCustomTimeString: '07:00 (High)' },
+            { name: 'sunrise',
+                method: MSS.sunrise,
+                sunHigh: false,
+                expectedTimeString: '06:00†',
+                expectedCustomTimeString: '06:00 (Low)' },
+            { name: 'sunset',
+                method: MSS.sunset,
+                sunHigh: true,
+                expectedTimeString: '19:00‡',
+                expectedCustomTimeString: '19:00 (High)' },
+            { name: 'sunset',
+                method: MSS.sunset,
+                sunHigh: false,
+                expectedTimeString: '18:00†',
+                expectedCustomTimeString: '18:00 (Low)' },
+            { name: 'civil dawn',
+                method: MSS.civilDawn,
+                sunHigh: true,
+                expectedTimeString: '06:30‡',
+                expectedCustomTimeString: '06:30 (High)' },
+            { name: 'civil dawn',
+                method: MSS.civilDawn,
+                sunHigh: false,
+                expectedTimeString: '05:30†',
+                expectedCustomTimeString: '05:30 (Low)' },
+            { name: 'civil dusk',
+                method: MSS.civilDusk,
+                sunHigh: true,
+                expectedTimeString: '19:30‡',
+                expectedCustomTimeString: '19:30 (High)' },
+            { name: 'civil dusk',
+                method: MSS.civilDusk,
+                sunHigh: false,
+                expectedTimeString: '18:30†',
+                expectedCustomTimeString: '18:30 (Low)' },
+            { name: 'nautical dawn',
+                method: MSS.nauticalDawn,
+                sunHigh: true,
+                expectedTimeString: '06:00‡',
+                expectedCustomTimeString: '06:00 (High)' },
+            { name: 'nautical dusk',
+                method: MSS.nauticalDusk,
+                sunHigh: true,
+                expectedTimeString: '20:00‡',
+                expectedCustomTimeString: '20:00 (High)' },
+            { name: 'astronomical dawn',
+                method: MSS.astronomicalDawn,
+                sunHigh: true,
+                expectedTimeString: '05:30‡',
+                expectedCustomTimeString: '05:30 (High)' },
+            { name: 'astronomica dusk',
+                method: MSS.astronomicalDusk,
+                sunHigh: true,
+                expectedTimeString: '20:30‡',
+                expectedCustomTimeString: '20:30 (High)' },
         ];
 
         describe('and returnTimeForNoEventCase is false', () => {
@@ -182,6 +230,21 @@ describe('the solar events calculations', () => {
                     const event = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude) as DateTime;
                     const result = MSS.format(event, 'HH:mm');
                     expect(result).toEqual(expectedTimeString);
+                });
+            });
+
+            cases.forEach(({ name, method, sunHigh, expectedCustomTimeString }) => {
+                it(`${name} (sun ${sunHigh ? 'high' : 'low'}) (custom \`dateFormatKeys\`)`, () => {
+                    MSS.settings({
+                        returnTimeForNoEventCase: true,
+                        dateFormatKeys: {
+                            SUN_HIGH: ' (High)',
+                            SUN_LOW: ' (Low)',
+                        },
+                    });
+                    const event = method(sunHigh ? dateSunHigh : dateSunLow, latitude, longitude) as DateTime;
+                    const result = MSS.format(event, 'HH:mm');
+                    expect(result).toEqual(expectedCustomTimeString);
                 });
             });
         });
