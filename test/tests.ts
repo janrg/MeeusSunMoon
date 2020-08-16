@@ -59,6 +59,31 @@ describe('the moon phases calculation', () => {
 });
 
 describe('the solar events calculations', () => {
+    describe('with `roundToNearestMinute: true`', () => {
+        beforeAll(() => {
+            MSS.settings({ roundToNearestMinute: true });
+        });
+        afterAll(() => {
+            MSS.settings({ roundToNearestMinute: false });
+        });
+
+        it('should return the correct times for sunrise', () => {
+            const { latitude, longitude, timezone, data } = locations[0];
+            const times = data[0];
+            const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+            const sunrise = MSS.sunrise(date, latitude, longitude);
+            const refSunrise = getRefEventTime(times[dataIndices.SUNRISE], timezone);
+            expectCorrectTimeOrNoEventCode(date, sunrise, refSunrise);
+        });
+        it('should return the correct times for solar noon', () => {
+            const { latitude, timezone, data } = locations[0];
+            const times = data[0];
+            const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
+            const solarNoon = MSS.solarNoon(date, latitude);
+            const refSolarNoon = getRefEventTime(times[dataIndices.SOLAR_NOON], timezone);
+            expectCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
+        });
+    });
     locations.forEach(({ latitude, longitude, timezone, name, data }) => {
         describe(`for ${name}`, () => {
             it('should return the correct times for sunrise', () => {
