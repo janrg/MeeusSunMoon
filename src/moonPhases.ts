@@ -23,7 +23,7 @@ const truePhase = (k: number, phase: MoonPhaseNumber): number => {
     let DeltaJDE = 0;
     if (phase === 0 || phase === 2) {
         DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
-    } else if (phase === 1 || phase === 3) {
+    } else /* istanbul ignore else */ if (phase === 1 || phase === 3) {
         DeltaJDE += quarterCorrections(E, M, MPrime, F, Omega, phase);
     }
     DeltaJDE += commonCorrections(T, k);
@@ -173,7 +173,7 @@ const newMoonFullMoonCorrections = (E: number, M: number, MPrime: number, F: num
             0.00739 * E * sind(MPrime - M) -
             0.00514 * E * sind(MPrime + M) +
             0.00208 * E * E * sind(2 * M);
-    } else if (phase === 2) {
+    } else /* istanbul ignore else */ if (phase === 2) {
         DeltaJDE +=
             -0.40614 * sind(MPrime) +
             0.17302 * E * sind(M) +
@@ -236,7 +236,7 @@ const quarterCorrections = (E: number, M: number, MPrime: number, F: number, Ome
         0.00002 * cosd(2 * F);
     if (phase === 1) {
         DeltaJDE += W;
-    } else if (phase === 3) {
+    } else /* istanbul ignore else */ if (phase === 3) {
         DeltaJDE -= W;
     }
     return DeltaJDE;
