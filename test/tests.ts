@@ -25,6 +25,43 @@ describe('the moon phases calculation', () => {
                 afterAll(() => {
                     MSS.settings({ roundToNearestMinute: !roundToNearestMinute });
                 });
+
+                [
+                    ['-1999 <= y < -500', -1050],
+                    ['-500 <= y < 500', -4],
+                    ['500 <= y < 1600 (Pre-Gregorian)', 622],
+                    ['1600 <= y < 1700', 1620],
+                    ['1700 <= y < 1800', 1753],
+                    ['1800 <= y < 1860', 1844],
+                    ['1860 <= y < 1900', 1899],
+                    ['1900 <= y < 1920', 1913],
+                    ['1920 <= y < 1941', 1923],
+                    ['1941 <= y < 1961', 1950],
+                    ['1961 <= y < 1986', 1981],
+                    ['1986 <= y < 2005', 2000],
+                    ['2005 <= y < 2050', 2025],
+                    ['2050 <= y < 2150', 2100],
+                    ['2150 <= y <= 3000', 2151],
+                ].forEach(([text, year]) => {
+                    it(`should handle (${text})`, () => {
+                        const moonTimes = MSS.yearMoonPhases(year as number, phase as MoonPhaseNumber);
+                        expect(moonTimes.length).toBeGreaterThanOrEqual(12);
+                    });
+                });
+
+                [
+                    ['y < -1999', -2000],
+                    ['y > 3000', 3050],
+                ].forEach(([text, year]) => {
+                    it(`should throw when out-of-bounds (${text})`, () => {
+                        expect(() => {
+                            MSS.yearMoonPhases(year as number, phase as MoonPhaseNumber);
+                        }).toThrow(new TypeError(
+                            'DeltaT can only be calculated between 1999 BCE and 3000 CE',
+                        ));
+                    });
+                });
+
                 it('should return the correct time in UTC', () => {
                     const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber);
                     for (let i = 0; i < moonTimes.length; i++) {
@@ -91,6 +128,14 @@ describe('the solar events calculations', () => {
             const solarNoon = MSS.solarNoon(date, latitude);
             const refSolarNoon = getRefEventTime(times[dataIndices.SOLAR_NOON], timezone);
             expectCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
+        });
+    });
+    describe('Pre-Gregorian', () => {
+        it('solar noon', () => {
+            const { latitude, timezone } = locations[0];
+            const date = dateTimeFromReferenceTime('1500-01-01 12:00', timezone);
+            const solarNoon = MSS.solarNoon(date, latitude);
+            expect(solarNoon.hour).toEqual(0);
         });
     });
     locations.forEach(({ latitude, longitude, timezone, name, data }) => {
