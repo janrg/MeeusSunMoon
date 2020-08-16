@@ -16,24 +16,33 @@ describe('the moon phases calculation', () => {
         { name: 'fullMoon', phase: 2 },
         { name: 'lastQuarter', phase: 3 },
     ].forEach(({ name, phase }) => {
-        describe(`for ${name}`, () => {
-            it('should return the correct time in UTC', () => {
-                const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber);
-                for (let i = 0; i < moonTimes.length; i++) {
-                    const refTime = dateTimeFromReferenceTime(moonPhases[name][i]);
-                    expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
-                }
-            });
+        [true, false].forEach((roundToNearestMinute) => {
+            const testSuffix = roundToNearestMinute ? ' (roundToNearestMinute)' : '';
+            describe(`for ${name}${testSuffix}`, () => {
+                beforeAll(() => {
+                    MSS.settings({ roundToNearestMinute });
+                });
+                afterAll(() => {
+                    MSS.settings({ roundToNearestMinute: !roundToNearestMinute });
+                });
+                it('should return the correct time in UTC', () => {
+                    const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber);
+                    for (let i = 0; i < moonTimes.length; i++) {
+                        const refTime = dateTimeFromReferenceTime(moonPhases[name][i]);
+                        expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
+                    }
+                });
 
-            it('should return the correct time in a given timezone', () => {
-                const timezone = 'Pacific/Auckland';
-                const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber, timezone);
-                for (let i = 0; i < moonTimes.length; i++) {
-                    const refTime = dateTimeFromReferenceTime(moonPhases[name][i])
-                        .setZone(timezone);
-                    expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
-                    expect(moonTimes[i].toFormat('ZZ ZZZZZ')).toEqual(refTime.toFormat('ZZ ZZZZZ'));
-                }
+                it('should return the correct time in a given timezone', () => {
+                    const timezone = 'Pacific/Auckland';
+                    const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber, timezone);
+                    for (let i = 0; i < moonTimes.length; i++) {
+                        const refTime = dateTimeFromReferenceTime(moonPhases[name][i])
+                            .setZone(timezone);
+                        expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
+                        expect(moonTimes[i].toFormat('ZZ ZZZZZ')).toEqual(refTime.toFormat('ZZ ZZZZZ'));
+                    }
+                });
             });
         });
     });
