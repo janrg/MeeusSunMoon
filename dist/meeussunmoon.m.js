@@ -162,7 +162,7 @@ const DeltaT = (datetime) => {
     let t;
     switch (true) {
         case y < -1999 || y > 3000:
-            throw 'DeltaT can only be calculated between 1999 BCE and 3000 CE';
+            throw new RangeError('DeltaT can only be calculated between 1999 BCE and 3000 CE');
         case y < -500:
             u = (y - 1820) / 100;
             return -20 + 32 * Math.pow(u, 2);
@@ -798,7 +798,7 @@ const truePhase = (k, phase) => {
     if (phase === 0 || phase === 2) {
         DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
     }
-    else if (phase === 1 || phase === 3) {
+    else /* istanbul ignore else */ if (phase === 1 || phase === 3) {
         DeltaJDE += quarterCorrections(E, M, MPrime, F, Omega, phase);
     }
     DeltaJDE += commonCorrections(T, k);
@@ -940,7 +940,7 @@ const newMoonFullMoonCorrections = (E, M, MPrime, F, Omega, phase) => {
                 0.00514 * E * sind(MPrime + M) +
                 0.00208 * E * E * sind(2 * M);
     }
-    else if (phase === 2) {
+    else /* istanbul ignore else */ if (phase === 2) {
         DeltaJDE +=
             -0.40614 * sind(MPrime) +
                 0.17302 * E * sind(M) +
@@ -1000,7 +1000,7 @@ const quarterCorrections = (E, M, MPrime, F, Omega, phase) => {
     if (phase === 1) {
         DeltaJDE += W;
     }
-    else if (phase === 3) {
+    else /* istanbul ignore else */ if (phase === 3) {
         DeltaJDE -= W;
     }
     return DeltaJDE;

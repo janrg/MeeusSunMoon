@@ -56,9 +56,7 @@ describe('the moon phases calculation', () => {
                     it(`should throw when out-of-bounds (${text})`, () => {
                         expect(() => {
                             MSS.yearMoonPhases(year as number, phase as MoonPhaseNumber);
-                        }).toThrow(new TypeError(
-                            'DeltaT can only be calculated between 1999 BCE and 3000 CE',
-                        ));
+                        }).toThrow('DeltaT can only be calculated between 1999 BCE and 3000 CE');
                     });
                 });
 

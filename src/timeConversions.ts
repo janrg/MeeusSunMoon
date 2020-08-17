@@ -91,7 +91,7 @@ const DeltaT = (datetime: DateTime): number => {
     let t;
     switch (true) {
         case y < -1999 || y > 3000:
-            throw new TypeError('DeltaT can only be calculated between 1999 BCE and 3000 CE');
+            throw new RangeError('DeltaT can only be calculated between 1999 BCE and 3000 CE');
         case y < -500:
             u = (y - 1820) / 100;
             return -20 + 32 * u ** 2;
