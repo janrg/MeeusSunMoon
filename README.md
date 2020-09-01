@@ -41,10 +41,10 @@ import MeeusSunMoon from 'node_modules/meeussunmoon/dist/meeussunmoon-es.js'
 
 ### Configuration
 
-There are three configuration options that can be set as
+There are three configuration settings that can be set as
 
 ```js
-MeeusSunMoon.options({
+MeeusSunMoon.settings({
   roundToNearestMinute: true, // default: false
   returnTimeForNoEventCase: true, // default: false
   dateFormatKeys: {'SUN_HIGH': '‡', 'SUN_LOW': '†'} // default {'SUN_HIGH': '‡', 'SUN_LOW': '†'};
