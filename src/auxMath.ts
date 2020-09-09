@@ -41,13 +41,11 @@ const reduceAngle = (angle: number): number => angle - (360 * Math.floor(angle /
  */
 const polynomial = (variable: number, coeffs: Array<number>): number => {
     let varPower = 1;
-    let sum = 0.0;
-    const numCoeffs = coeffs.length;
-    for (let i = 0; i < numCoeffs; i++) {
-        sum += varPower * coeffs[i];
+    return coeffs.reduce((accumulator, currentValue) => {
+        accumulator += varPower * currentValue;
         varPower *= variable;
-    }
-    return sum;
+        return accumulator;
+    }, 0.0);
 };
 
 /**
