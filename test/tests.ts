@@ -7,7 +7,7 @@ import { locations, moonPhases } from './referenceTimes';
 // rounding here, the difference is the same it would be if we rounded down.
 MSS.settings({ roundToNearestMinute: false });
 
-const maxError = 1;
+const maxError = 2;
 
 describe('the moon phases calculation', () => {
     [
@@ -64,7 +64,7 @@ describe('the moon phases calculation', () => {
                     const moonTimes = MSS.yearMoonPhases(2016, phase as MoonPhaseNumber);
                     for (let i = 0; i < moonTimes.length; i++) {
                         const refTime = dateTimeFromReferenceTime(moonPhases[name][i]);
-                        expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
+                        expect(Math.abs(moonTimes[i].diff(refTime).as('minutes'))).toBeLessThanOrEqual(maxError);
                     }
                 });
 
@@ -74,7 +74,7 @@ describe('the moon phases calculation', () => {
                     for (let i = 0; i < moonTimes.length; i++) {
                         const refTime = dateTimeFromReferenceTime(moonPhases[name][i])
                             .setZone(timezone);
-                        expect(Math.abs(moonTimes[i].diff(refTime).minutes)).toBeLessThanOrEqual(maxError);
+                        expect(Math.abs(moonTimes[i].diff(refTime).as('minutes'))).toBeLessThanOrEqual(maxError);
                         expect(moonTimes[i].toFormat('ZZ ZZZZZ')).toEqual(refTime.toFormat('ZZ ZZZZZ'));
                     }
                 });
@@ -120,20 +120,20 @@ describe('the solar events calculations', () => {
             expectCorrectTimeOrNoEventCode(date, sunrise, refSunrise);
         });
         it('should return the correct times for solar noon', () => {
-            const { latitude, timezone, data } = locations[0];
+            const { longitude, timezone, data } = locations[0];
             const times = data[0];
             const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
-            const solarNoon = MSS.solarNoon(date, latitude);
+            const solarNoon = MSS.solarNoon(date, longitude);
             const refSolarNoon = getRefEventTime(times[dataIndices.SOLAR_NOON], timezone);
             expectCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
         });
     });
     describe('Pre-Gregorian', () => {
         it('solar noon', () => {
-            const { latitude, timezone } = locations[0];
+            const { longitude, timezone } = locations[0];
             const date = dateTimeFromReferenceTime('1500-01-01 12:00', timezone);
-            const solarNoon = MSS.solarNoon(date, latitude);
-            expect(solarNoon.hour).toEqual(0);
+            const solarNoon = MSS.solarNoon(date, longitude);
+            expect(solarNoon.hour).toEqual(12);
         });
     });
     locations.forEach(({ latitude, longitude, timezone, name, data }) => {
@@ -159,7 +159,7 @@ describe('the solar events calculations', () => {
             it('should return the correct times for solar noon', () => {
                 data.forEach((times) => {
                     const date = dateTimeFromReferenceTime(times[dataIndices.DATE], timezone);
-                    const solarNoon = MSS.solarNoon(date, latitude);
+                    const solarNoon = MSS.solarNoon(date, longitude);
                     const refSolarNoon = getRefEventTime(times[dataIndices.SOLAR_NOON], timezone);
                     expectCorrectTimeOrNoEventCode(date, solarNoon, refSolarNoon);
                 });
@@ -376,7 +376,7 @@ const expectCorrectTimeOrNoEventCode = (date, eventTime, refEventTime) => {
     } else if (typeof eventTime === 'string') {
         expect(eventTime).toEqual(refEventTime);
     } else {
-        expect(Math.abs(eventTime.diff(refEventTime).minutes)).toBeLessThanOrEqual(maxError);
+        expect(Math.abs(eventTime.diff(refEventTime).as('minutes'))).toBeLessThanOrEqual(maxError);
     }
 };
 

@@ -412,7 +412,7 @@
             suntime = suntime.plus({ seconds: Math.floor(m * 3600 * 24 + 0.5) });
         }
         else {
-            suntime = suntime.minus({ seconds: Math.floor(m * 3600 * 24 + 0.5) });
+            suntime = suntime.minus({ seconds: Math.floor(Math.abs(m) * 3600 * 24 + 0.5) });
         }
         if (roundToNearestMinute) {
             suntime = suntime.plus({ seconds: 30 }).set({ second: 0 });
@@ -472,7 +472,7 @@
         if (localM < 0) {
             return m + 1;
         }
-        else if (localM > 1) {
+        else /* istanbul ignore next */ if (localM > 1) {
             return m - 1;
         }
         return m;
