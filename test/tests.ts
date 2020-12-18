@@ -7,7 +7,7 @@ import { locations, moonPhases } from './referenceTimes';
 // rounding here, the difference is the same it would be if we rounded down.
 MSS.settings({ roundToNearestMinute: false });
 
-const maxError = 1;
+const maxError = 2;
 
 describe('the moon phases calculation', () => {
     [
@@ -376,7 +376,7 @@ const expectCorrectTimeOrNoEventCode = (date, eventTime, refEventTime) => {
     } else if (typeof eventTime === 'string') {
         expect(eventTime).toEqual(refEventTime);
     } else {
-        expect(Math.abs(eventTime.diff(refEventTime).minutes)).toBeLessThanOrEqual(maxError);
+        expect(Math.abs(eventTime.diff(refEventTime).as("minutes"))).toBeLessThanOrEqual(maxError);
     }
 };
 
