@@ -77,11 +77,7 @@ const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: RiseSetFla
         m += DeltaM;
         counter++;
     }
-    if (m > 0) {
-        suntime = suntime.plus({ seconds: Math.floor(m * 3600 * 24 + 0.5) });
-    } else {
-        suntime = suntime.minus({ seconds: Math.floor(m * 3600 * 24 + 0.5) });
-    }
+    suntime = suntime.plus({ seconds: Math.floor(m * 3600 * 24 + 0.5) });
     if (roundToNearestMinute) {
         suntime = suntime.plus({ seconds: 30 }).set({ second: 0 });
     }
