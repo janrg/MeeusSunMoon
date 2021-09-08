@@ -36,7 +36,7 @@ import MeeusSunMoon from 'meeussunmoon'
 or directly use it in the browser via
 
 ```js
-import MeeusSunMoon from 'node_modules/meeussunmoon/dist/meeussunmoon-es.js'
+import MeeusSunMoon from 'node_modules/meeussunmoon/dist/meeussunmoon.m.js'
 ```
 
 ### Configuration

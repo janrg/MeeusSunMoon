@@ -10,6 +10,28 @@
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MeeusSunMoon = {}, global.luxon));
 }(this, (function (exports, luxon) { 'use strict';
 
+    function _interopNamespace(e) {
+        if (e && e.__esModule) return e;
+        var n = Object.create(null);
+        if (e) {
+            Object.keys(e).forEach(function (k) {
+                if (k !== 'default') {
+                    var d = Object.getOwnPropertyDescriptor(e, k);
+                    Object.defineProperty(n, k, d.get ? d : {
+                        enumerable: true,
+                        get: function () {
+                            return e[k];
+                        }
+                    });
+                }
+            });
+        }
+        n['default'] = e;
+        return Object.freeze(n);
+    }
+
+    var luxon__namespace = /*#__PURE__*/_interopNamespace(luxon);
+
     /**
      * Converts angles in degrees to radians.
      * @param {number} deg Angle in degrees.
@@ -251,20 +273,20 @@
     };
 
     /** See AA p144 */
-    const sunMeanAnomaly = [357.52772, 35999.050340, -0.0001603, -1 / 300000];
+    const sunMeanAnomaly$2 = [357.52772, 35999.050340, -0.0001603, -1 / 300000];
     /** See AA p163 Eq 25.2 */
-    const sunMeanLongitude = [280.46646, 36000.76983, 0.0003032];
+    const sunMeanLongitude$1 = [280.46646, 36000.76983, 0.0003032];
     /** See AA p147 Eq22.3 */
-    const meanObliquityOfEcliptic = [84381.448 / 3600, -4680.93 / 3600, -1.55 / 3600, 1999.25 / 3600, -51.38 / 3600, -249.67 / 3600, -39.05 / 3600,
+    const meanObliquityOfEcliptic$1 = [84381.448 / 3600, -4680.93 / 3600, -1.55 / 3600, 1999.25 / 3600, -51.38 / 3600, -249.67 / 3600, -39.05 / 3600,
         7.12 / 3600, 27.87 / 3600, 5.79 / 3600, 2.45 / 3600];
     /** See AA p144 */
-    const moonArgumentOfLatitude = [93.27191, 483202.017538, -0.0036825, 1 / 327270];
+    const moonArgumentOfLatitude$2 = [93.27191, 483202.017538, -0.0036825, 1 / 327270];
     /** See AA p144 */
-    const moonAscendingNodeLongitude = [125.04452, -1934.136261, 0.0020708, 1 / 450000];
+    const moonAscendingNodeLongitude$2 = [125.04452, -1934.136261, 0.0020708, 1 / 450000];
     /** See AA p144 */
-    const moonMeanAnomaly = [134.96298, 477198.867398, 0.0086972, 1 / 56250];
+    const moonMeanAnomaly$2 = [134.96298, 477198.867398, 0.0086972, 1 / 56250];
     /** See AA p144 */
-    const moonMeanElongation = [297.85036, 445267.111480, -0.0019142, 1 / 189474];
+    const moonMeanElongation$1 = [297.85036, 445267.111480, -0.0019142, 1 / 189474];
     /* eslint-disable no-multi-spaces, array-bracket-spacing */
     /**
      * Nutations in longitude and obliquity
@@ -623,7 +645,7 @@
      * @returns {number} True obliquity of the ecliptic.
      */
     const trueObliquityOfEcliptic = (T) => {
-        const epsilon0 = meanObliquityOfEcliptic$1(T);
+        const epsilon0 = meanObliquityOfEcliptic(T);
         const DeltaEpsilon = nutationInObliquity(T);
         return epsilon0 + DeltaEpsilon;
     };
@@ -633,9 +655,9 @@
      *     2000-01-01T12:00:00Z.
      * @returns {number} Mean obliquity of the ecliptic.
      */
-    const meanObliquityOfEcliptic$1 = (T) => {
+    const meanObliquityOfEcliptic = (T) => {
         const U = T / 100;
-        return polynomial(U, meanObliquityOfEcliptic);
+        return polynomial(U, meanObliquityOfEcliptic$1);
     };
     /**
      * Calculates the apparent longitude of the sun (see AA p164).
@@ -655,7 +677,7 @@
      * @returns {number} True longitude of the sun.
      */
     const sunTrueLongitude = (T) => {
-        const L0 = sunMeanLongitude$1(T);
+        const L0 = sunMeanLongitude(T);
         const C = sunEquationOfCenter(T);
         return L0 + C;
     };
@@ -677,7 +699,7 @@
      * @returns {number} Nutation in longitude of the sun.
      */
     const nutationInLongitude = (T) => {
-        const D = moonMeanElongation$1(T);
+        const D = moonMeanElongation(T);
         const M = sunMeanAnomaly$1(T);
         const MPrime = moonMeanAnomaly$1(T);
         const F = moonArgumentOfLatitude$1(T);
@@ -698,7 +720,7 @@
      * @returns {number} Nutation in obliquity of the sun.
      */
     const nutationInObliquity = (T) => {
-        const D = moonMeanElongation$1(T);
+        const D = moonMeanElongation(T);
         const M = sunMeanAnomaly$1(T);
         const MPrime = moonMeanAnomaly$1(T);
         const F = moonArgumentOfLatitude$1(T);
@@ -719,7 +741,7 @@
      * @returns {number} Argument of latitude of the moon.
      */
     const moonArgumentOfLatitude$1 = (T) => {
-        const F = polynomial(T, moonArgumentOfLatitude);
+        const F = polynomial(T, moonArgumentOfLatitude$2);
         return reduceAngle(F);
     };
     /**
@@ -730,7 +752,7 @@
      * @returns {number} Longitude of the asc. node of the moon's mean orbit.
      */
     const moonAscendingNodeLongitude$1 = (T) => {
-        const Omega = polynomial(T, moonAscendingNodeLongitude);
+        const Omega = polynomial(T, moonAscendingNodeLongitude$2);
         return reduceAngle(Omega);
     };
     /**
@@ -740,7 +762,7 @@
      * @returns {number} Mean anomaly of the moon.
      */
     const moonMeanAnomaly$1 = (T) => {
-        const MPrime = polynomial(T, moonMeanAnomaly);
+        const MPrime = polynomial(T, moonMeanAnomaly$2);
         return reduceAngle(MPrime);
     };
     /**
@@ -749,8 +771,8 @@
      *     2000-01-01T12:00:00Z.
      * @returns {number} Mean elongation of the moon from the sun.
      */
-    const moonMeanElongation$1 = (T) => {
-        const D = polynomial(T, moonMeanElongation);
+    const moonMeanElongation = (T) => {
+        const D = polynomial(T, moonMeanElongation$1);
         return reduceAngle(D);
     };
     /**
@@ -760,7 +782,7 @@
      * @returns {number} Mean anomaly of the sun.
      */
     const sunMeanAnomaly$1 = (T) => {
-        const M = polynomial(T, sunMeanAnomaly);
+        const M = polynomial(T, sunMeanAnomaly$2);
         return reduceAngle(M);
     };
     /**
@@ -771,8 +793,8 @@
      * @returns {number} Mean longitude of the sun referred to the mean equinox of
      *     the date.
      */
-    const sunMeanLongitude$1 = (T) => {
-        const L0 = polynomial(T, sunMeanLongitude);
+    const sunMeanLongitude = (T) => {
+        const L0 = polynomial(T, sunMeanLongitude$1);
         return reduceAngle(L0);
     };
     const noEventCodes = {
@@ -794,10 +816,10 @@
         const T = kToT(k);
         const E = eccentricityCorrection(T);
         const JDE = meanPhase(T, k);
-        const M = sunMeanAnomaly$2(T, k);
-        const MPrime = moonMeanAnomaly$2(T, k);
-        const F = moonArgumentOfLatitude$2(T, k);
-        const Omega = moonAscendingNodeLongitude$2(T, k);
+        const M = sunMeanAnomaly(T, k);
+        const MPrime = moonMeanAnomaly(T, k);
+        const F = moonArgumentOfLatitude(T, k);
+        const Omega = moonAscendingNodeLongitude(T, k);
         let DeltaJDE = 0;
         if (phase === 0 || phase === 2) {
             DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
@@ -828,7 +850,7 @@
      *     2000-01-06.
      * @returns {number} Mean anomaly of the sun at the given time.
      */
-    const sunMeanAnomaly$2 = (T, k) => 2.5534 + 29.10535670 * k - 0.0000014 * Math.pow(T, 2) -
+    const sunMeanAnomaly = (T, k) => 2.5534 + 29.10535670 * k - 0.0000014 * Math.pow(T, 2) -
         0.00000011 * Math.pow(T, 3);
     /**
      * Calculates the mean anomaly of the moon (see AA p350 Eq49.5).
@@ -838,7 +860,7 @@
      *     2000-01-06.
      * @returns {number} Mean anomaly of the moon at the given time.
      */
-    const moonMeanAnomaly$2 = (T, k) => 201.5643 + 385.81693528 * k + 0.0107582 * Math.pow(T, 2) +
+    const moonMeanAnomaly = (T, k) => 201.5643 + 385.81693528 * k + 0.0107582 * Math.pow(T, 2) +
         0.00001238 * Math.pow(T, 3) - 0.000000058 * Math.pow(T, 4);
     /**
      * Calculates the argument of latitude of the moon (see AA p350 Eq49.6).
@@ -848,7 +870,7 @@
      *     2000-01-06.
      * @returns {number} Argument of latitude of the moon at the given time.
      */
-    const moonArgumentOfLatitude$2 = (T, k) => 160.7108 + 390.67050284 * k - 0.0016118 * Math.pow(T, 2) -
+    const moonArgumentOfLatitude = (T, k) => 160.7108 + 390.67050284 * k - 0.0016118 * Math.pow(T, 2) -
         0.00000227 * Math.pow(T, 3) + 0.000000011 * Math.pow(T, 4);
     /**
      * Calculates the longitude of the ascending node of the lunar orbit (see AA
@@ -860,7 +882,7 @@
      * @returns {number} Longitude of the ascending node of the lunar orbit at the
      *     given time.
      */
-    const moonAscendingNodeLongitude$2 = (T, k) => 124.7746 - 1.56375588 * k + 0.0020672 * Math.pow(T, 2) +
+    const moonAscendingNodeLongitude = (T, k) => 124.7746 - 1.56375588 * k + 0.0020672 * Math.pow(T, 2) +
         0.00000215 * Math.pow(T, 3);
     /**
      * Calculates the correction for the eccentricity of the earth's orbit.
@@ -1196,10 +1218,10 @@
      * @returns {array} Array of DateTime objects for moons of the given phase.
      */
     const yearMoonPhases = (year, phase, timezone = 'UTC') => {
-        const yearBegin = luxon.DateTime.fromObject(
+        const yearBegin = luxon__namespace.DateTime.fromObject(
         // eslint-disable-next-line sort-keys
         { year, month: 1, day: 1, hour: 0, minute: 0, second: 0, zone: timezone });
-        const yearEnd = luxon.DateTime.fromObject(
+        const yearEnd = luxon__namespace.DateTime.fromObject(
         // eslint-disable-next-line sort-keys
         { year: year + 1, month: 1, day: 1, hour: 0, minute: 0, second: 0, zone: timezone });
         // this will give us k for the first new moon of the year or earlier
