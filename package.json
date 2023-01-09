@@ -24,7 +24,7 @@
     ]
   },
   "dependencies": {
-    "luxon": "^1.25.0"
+    "luxon": "^2.5.2"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.1.0",
