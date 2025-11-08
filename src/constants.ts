@@ -1,17 +1,27 @@
 /** See AA p144 */
+// biome-ignore format: significant figures
 const sunMeanAnomaly = [357.52772, 35999.050340, -0.0001603, -1 / 300000];
 
 /** See AA p163 Eq 25.2 */
 const sunMeanLongitude = [280.46646, 36000.76983, 0.0003032];
 
 /** See AA p147 Eq22.3 */
-const meanObliquityOfEcliptic =
-    [84381.448 / 3600, -4680.93 / 3600, -1.55 / 3600, 1999.25 / 3600, -51.38 / 3600, -249.67 / 3600, -39.05 / 3600,
-        7.12 / 3600, 27.87 / 3600, 5.79 / 3600, 2.45 / 3600];
+const meanObliquityOfEcliptic = [
+    84381.448 / 3600,
+    -4680.93 / 3600,
+    -1.55 / 3600,
+    1999.25 / 3600,
+    -51.38 / 3600,
+    -249.67 / 3600,
+    -39.05 / 3600,
+    7.12 / 3600,
+    27.87 / 3600,
+    5.79 / 3600,
+    2.45 / 3600,
+];
 
 /** See AA p144 */
-const moonArgumentOfLatitude =
-    [93.27191, 483202.017538, -0.0036825, 1 / 327270];
+const moonArgumentOfLatitude = [93.27191, 483202.017538, -0.0036825, 1 / 327270];
 
 /** See AA p144 */
 const moonAscendingNodeLongitude = [125.04452, -1934.136261, 0.0020708, 1 / 450000];
@@ -20,13 +30,14 @@ const moonAscendingNodeLongitude = [125.04452, -1934.136261, 0.0020708, 1 / 4500
 const moonMeanAnomaly = [134.96298, 477198.867398, 0.0086972, 1 / 56250];
 
 /** See AA p144 */
+// biome-ignore format: significant figures
 const moonMeanElongation = [297.85036, 445267.111480, -0.0019142, 1 / 189474];
 
-/* eslint-disable no-multi-spaces, array-bracket-spacing */
 /**
  * Nutations in longitude and obliquity
  * See AA p145f
  */
+// biome-ignore format: Column alignment
 const nutations =
     [
         [ 0,  0,  0,  0, 1, -171996, -174.2, 92025,  8.9],
@@ -93,7 +104,14 @@ const nutations =
         [ 0,  0,  3,  2, 2,      3,       0,     0,    0],
         [ 2, -1,  0,  2, 2,     -3,       0,     0,    0],
     ];
-/* eslint-enable no-multi-spaces, array-bracket-spacing */
 
-export { sunMeanAnomaly, sunMeanLongitude, meanObliquityOfEcliptic, moonArgumentOfLatitude, moonAscendingNodeLongitude,
-    moonMeanAnomaly, moonMeanElongation, nutations };
+export {
+    sunMeanAnomaly,
+    sunMeanLongitude,
+    meanObliquityOfEcliptic,
+    moonArgumentOfLatitude,
+    moonAscendingNodeLongitude,
+    moonMeanAnomaly,
+    moonMeanElongation,
+    nutations,
+};

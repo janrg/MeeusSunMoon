@@ -1,8 +1,9 @@
-import * as constants from './constants';
-import { DateTime, NoEventCode, RiseSetFlag } from './types';
-import { DeltaT, datetimeToT } from './timeConversions';
+import { DateTime } from 'luxon';
 import { cosd, interpolateFromThree, polynomial, rad2deg, reduceAngle, sind } from './auxMath';
+import * as constants from './constants';
 import { returnTimeForNoEventCase, roundToNearestMinute } from './settings';
+import { DeltaT, datetimeToT } from './timeConversions';
+import { DateTimeWithErrorCode, NoEventCode, RiseSetFlag } from './types';
 
 /**
  * Calculates the solar transit time on a date at a given longitude (see AA
@@ -13,13 +14,14 @@ import { returnTimeForNoEventCase, roundToNearestMinute } from './settings';
  */
 const sunTransit = (datetime: DateTime, L: number): DateTime => {
     const timezone = datetime.zone;
-    let transit = datetime.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+    let transit = datetime
+        .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
         .setZone('UTC', { keepLocalTime: true });
     const deltaT = DeltaT(transit);
     const T = datetimeToT(transit);
     const Theta0 = apparentSiderealTimeGreenwich(T);
     // Want 0h TD for this, not UT
-    const TD = T - (deltaT / (3600 * 24 * 36525));
+    const TD = T - deltaT / (3600 * 24 * 36525);
     const alpha = sunApparentRightAscension(TD);
     // Sign flip for longitude from AA as we take East as positive
     let m = (alpha - L - Theta0) / 360;
@@ -46,17 +48,22 @@ const sunTransit = (datetime: DateTime, L: number): DateTime => {
  *     astronomical dawn/dusk.
  * @returns {DateTime} Sunrise or sunset time.
  */
-// eslint-disable-next-line complexity,require-jsdoc
-const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: RiseSetFlag, offset: number = 50 / 60):
-    DateTime => {
+const sunRiseSet = (
+    datetime: DateTime,
+    phi: number,
+    L: number,
+    flag: RiseSetFlag,
+    offset: number = 50 / 60,
+): DateTime => {
     const timezone = datetime.zone;
-    let suntime = datetime.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+    let suntime = datetime
+        .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
         .setZone('UTC', { keepLocalTime: true });
     const deltaT = DeltaT(suntime);
     const T = datetimeToT(suntime);
     const Theta0 = apparentSiderealTimeGreenwich(T);
     // Want 0h TD for this, not UT
-    const TD = T - (deltaT / (3600 * 24 * 36525));
+    const TD = T - deltaT / (3600 * 24 * 36525);
     const alpha = sunApparentRightAscension(TD);
     const delta = sunApparentDeclination(TD);
     const H0 = approxLocalHourAngle(phi, delta, offset);
@@ -72,7 +79,7 @@ const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: RiseSetFla
     let counter = 0;
     let DeltaM = 1;
     // Repeat if correction is larger than ~9s
-    while ((Math.abs(DeltaM) > 0.0001) && (counter < 3)) {
+    while (Math.abs(DeltaM) > 0.0001 && counter < 3) {
         DeltaM = sunRiseSetCorrection(T, Theta0, deltaT, phi, L, m, offset);
         m += DeltaM;
         counter++;
@@ -97,15 +104,19 @@ const sunRiseSet = (datetime: DateTime, phi: number, L: number, flag: RiseSetFla
  * @param {string|undefined} errorCode The error code in case no event was found
  * @param {number} hour Hour to which the returned datetime should be set.
  * @param {number} minute Minute to which the returned datetime should be set.
- * @returns {(DateTime|string)} Time given by parameter 'hour' (+ correction for
+ * @returns {(DateTimeWithErrorCode|string)} Time given by parameter 'hour' (+ correction for
  *     DST if applicable) or a string indicating why there was no event ('SUN_HIGH'
  *     or 'SUN_LOW')
  */
-const handleNoEventCase = (date: DateTime, errorCode: NoEventCode, hour: number, minute: number = 0):
-    (DateTime | NoEventCode) => {
+const handleNoEventCase = (
+    date: DateTime,
+    errorCode: NoEventCode,
+    hour: number,
+    minute: number = 0,
+): DateTimeWithErrorCode | NoEventCode => {
     if (returnTimeForNoEventCase) {
         const returnDate = date.set({ hour, minute, second: 0 }).plus({ minutes: date.isInDST ? 60 : 0 });
-        (returnDate as DateTime).errorCode = errorCode;
+        (returnDate as DateTimeWithErrorCode).errorCode = errorCode;
         return returnDate;
     }
     return errorCode;
@@ -121,9 +132,7 @@ const handleNoEventCase = (date: DateTime, errorCode: NoEventCode, hour: number,
  * @returns {number} Approximate local hour angle.
  */
 const approxLocalHourAngle = (phi: number, delta: number, offset: number): number => {
-    const cosH0 = (sind(-offset) -
-        sind(phi) * sind(delta)) /
-        (cosd(phi) * cosd(delta));
+    const cosH0 = (sind(-offset) - sind(phi) * sind(delta)) / (cosd(phi) * cosd(delta));
     if (cosH0 < -1) {
         throw noEventCodes.SUN_HIGH;
     } else if (cosH0 > 1) {
@@ -138,11 +147,14 @@ const approxLocalHourAngle = (phi: number, delta: number, offset: number): numbe
  * @param {number} utcOffset Offset in minutes from UTC.
  * @returns {number} m Normalized m.
  */
+// biome-ignore format: coverage comment
 const normalizeM = (m: number, utcOffset: number): number => {
     const localM = m + utcOffset / 1440;
     if (localM < 0) {
         return m + 1;
-    } else /* istanbul ignore next */ if (localM > 1) {
+    }
+    /* istanbul ignore next */
+    if (localM > 1) {
         return m - 1;
     }
     return m;
@@ -180,16 +192,23 @@ const sunTransitCorrection = (T: number, Theta0: number, deltaT: number, L: numb
  *     astronomical dawn/dusk.
  * @returns {number} Correction for the sunrise/sunset time.
  */
-const sunRiseSetCorrection =
-    (T: number, Theta0: number, deltaT: number, phi: number, L: number, m: number, offset: number): number => {
-        const theta0 = Theta0 + 360.985647 * m;
-        const n = m + deltaT / 864000;
-        const alpha = interpolatedRa(T, n);
-        const delta = interpolatedDec(T, n);
-        const H = localHourAngle(theta0, L, alpha);
-        const h = altitude(phi, delta, H);
-        return (h + offset) / (360 * cosd(delta) * cosd(phi) * sind(H));
-    };
+const sunRiseSetCorrection = (
+    T: number,
+    Theta0: number,
+    deltaT: number,
+    phi: number,
+    L: number,
+    m: number,
+    offset: number,
+): number => {
+    const theta0 = Theta0 + 360.985647 * m;
+    const n = m + deltaT / 864000;
+    const alpha = interpolatedRa(T, n);
+    const delta = interpolatedDec(T, n);
+    const H = localHourAngle(theta0, L, alpha);
+    const h = altitude(phi, delta, H);
+    return (h + offset) / (360 * cosd(delta) * cosd(phi) * sind(H));
+};
 
 /**
  * Calculates the local hour angle of the sun (see AA p103).
@@ -214,8 +233,8 @@ const localHourAngle = (theta0: number, L: number, alpha: number): number => {
  * @param {number} H Local hour angle of the sun.
  * @returns {number} Altitude of the sun above the horizon.
  */
-const altitude = (phi: number, delta: number, H: number): number => rad2deg(Math.asin(
-    sind(phi) * sind(delta) + cosd(phi) * cosd(delta) * cosd(H)));
+const altitude = (phi: number, delta: number, H: number): number =>
+    rad2deg(Math.asin(sind(phi) * sind(delta) + cosd(phi) * cosd(delta) * cosd(H)));
 
 /**
  * Interpolates the sun's right ascension (see AA p103).
@@ -225,9 +244,9 @@ const altitude = (phi: number, delta: number, H: number): number => rad2deg(Math
  * @returns {number} Interpolated right ascension.
  */
 const interpolatedRa = (T: number, n: number): number => {
-    const alpha1 = sunApparentRightAscension(T - (1 / 36525));
+    const alpha1 = sunApparentRightAscension(T - 1 / 36525);
     const alpha2 = sunApparentRightAscension(T);
-    const alpha3 = sunApparentRightAscension(T + (1 / 36525));
+    const alpha3 = sunApparentRightAscension(T + 1 / 36525);
     const alpha = interpolateFromThree(alpha1, alpha2, alpha3, n, true);
     return reduceAngle(alpha);
 };
@@ -240,9 +259,9 @@ const interpolatedRa = (T: number, n: number): number => {
  * @returns {number} Interpolated declination.
  */
 const interpolatedDec = (T: number, n: number): number => {
-    const delta1 = sunApparentDeclination(T - (1 / 36525));
+    const delta1 = sunApparentDeclination(T - 1 / 36525);
     const delta2 = sunApparentDeclination(T);
-    const delta3 = sunApparentDeclination(T + (1 / 36525));
+    const delta3 = sunApparentDeclination(T + 1 / 36525);
     const delta = interpolateFromThree(delta1, delta2, delta3, n);
     return reduceAngle(delta);
 };
@@ -352,10 +371,14 @@ const sunTrueLongitude = (T: number): number => {
  *     2000-01-01T12:00:00Z.
  * @returns {number} Equation of center of the sun.
  */
+// biome-ignore format: significant figures
 const sunEquationOfCenter = (T: number): number => {
     const M = sunMeanAnomaly(T);
-    return (1.914602 - 0.004817 * T - 0.000014 * T ** 2) * sind(M) +
-        (0.019993 - 0.000101 * T) * sind(2 * M) + 0.000290 * sind(3 * M);
+    return (
+        (1.914602 - 0.004817 * T - 0.000014 * T ** 2) * sind(M) +
+        (0.019993 - 0.000101 * T) * sind(2 * M) +
+        0.000290 * sind(3 * M)
+    );
 };
 
 /**
@@ -373,8 +396,12 @@ const nutationInLongitude = (T: number): number => {
     let DeltaPsi = 0;
     let sineArg;
     for (let i = 0; i < 63; i++) {
-        sineArg = constants.nutations[i][0] * D + constants.nutations[i][1] * M + constants.nutations[i][2] * MPrime +
-            constants.nutations[i][3] * F + constants.nutations[i][4] * Omega;
+        sineArg =
+            constants.nutations[i][0] * D +
+            constants.nutations[i][1] * M +
+            constants.nutations[i][2] * MPrime +
+            constants.nutations[i][3] * F +
+            constants.nutations[i][4] * Omega;
         DeltaPsi += (constants.nutations[i][5] + constants.nutations[i][6] * T) * sind(sineArg);
     }
     return DeltaPsi / 36000000;
@@ -395,8 +422,12 @@ const nutationInObliquity = (T: number): number => {
     let DeltaEpsilon = 0;
     let cosArg;
     for (let i = 0; i < 63; i++) {
-        cosArg = constants.nutations[i][0] * D + constants.nutations[i][1] * M + constants.nutations[i][2] * MPrime +
-            constants.nutations[i][3] * F + constants.nutations[i][4] * Omega;
+        cosArg =
+            constants.nutations[i][0] * D +
+            constants.nutations[i][1] * M +
+            constants.nutations[i][2] * MPrime +
+            constants.nutations[i][3] * F +
+            constants.nutations[i][4] * Omega;
         DeltaEpsilon += (constants.nutations[i][7] + constants.nutations[i][8] * T) * cosd(cosArg);
     }
     return DeltaEpsilon / 36000000;

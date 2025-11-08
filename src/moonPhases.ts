@@ -1,6 +1,6 @@
 import { cosd, sind } from './auxMath';
-import { MoonPhaseNumber } from './types';
 import { kToT } from './timeConversions';
+import { MoonPhaseNumber } from './types';
 
 /**
  * Calculates the Julian date in ephemeris time of the moon near the date
@@ -23,7 +23,8 @@ const truePhase = (k: number, phase: MoonPhaseNumber): number => {
     let DeltaJDE = 0;
     if (phase === 0 || phase === 2) {
         DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
-    } else /* istanbul ignore else */ if (phase === 1 || phase === 3) {
+    }
+    if (phase === 1 || phase === 3) {
         DeltaJDE += quarterCorrections(E, M, MPrime, F, Omega, phase);
     }
     DeltaJDE += commonCorrections(T, k);
@@ -40,8 +41,9 @@ const truePhase = (k: number, phase: MoonPhaseNumber): number => {
  * @returns {number} Julian date in ephemeris time of the moon of given mean
  *     phase.
  */
-const meanPhase = (T: number, k: number): number => 2451550.09766 + 29.530588861 * k + 0.00015437 * T ** 2 -
-    0.000000150 * T ** 3 + 0.00000000073 * T ** 4;
+// biome-ignore format: significant figures
+const meanPhase = (T: number, k: number): number =>
+    2451550.09766 + 29.530588861 * k + 0.00015437 * T ** 2 - 0.000000150 * T ** 3 + 0.00000000073 * T ** 4;
 
 /**
  * Calculates the mean anomaly of the sun (see AA p350 Eq49.4).
@@ -51,8 +53,9 @@ const meanPhase = (T: number, k: number): number => 2451550.09766 + 29.530588861
  *     2000-01-06.
  * @returns {number} Mean anomaly of the sun at the given time.
  */
-const sunMeanAnomaly = (T: number, k: number): number => 2.5534 + 29.10535670 * k - 0.0000014 * T ** 2 -
-    0.00000011 * T ** 3;
+// biome-ignore format: significant figures
+const sunMeanAnomaly = (T: number, k: number): number =>
+    2.5534 + 29.10535670 * k - 0.0000014 * T ** 2 - 0.00000011 * T ** 3;
 
 /**
  * Calculates the mean anomaly of the moon (see AA p350 Eq49.5).
@@ -62,8 +65,8 @@ const sunMeanAnomaly = (T: number, k: number): number => 2.5534 + 29.10535670 * 
  *     2000-01-06.
  * @returns {number} Mean anomaly of the moon at the given time.
  */
-const moonMeanAnomaly = (T: number, k: number): number => 201.5643 + 385.81693528 * k + 0.0107582 * T ** 2 +
-    0.00001238 * T ** 3 - 0.000000058 * T ** 4;
+const moonMeanAnomaly = (T: number, k: number): number =>
+    201.5643 + 385.81693528 * k + 0.0107582 * T ** 2 + 0.00001238 * T ** 3 - 0.000000058 * T ** 4;
 
 /**
  * Calculates the argument of latitude of the moon (see AA p350 Eq49.6).
@@ -73,8 +76,8 @@ const moonMeanAnomaly = (T: number, k: number): number => 201.5643 + 385.8169352
  *     2000-01-06.
  * @returns {number} Argument of latitude of the moon at the given time.
  */
-const moonArgumentOfLatitude = (T: number, k: number): number => 160.7108 + 390.67050284 * k - 0.0016118 * T ** 2 -
-    0.00000227 * T ** 3 + 0.000000011 * T ** 4;
+const moonArgumentOfLatitude = (T: number, k: number): number =>
+    160.7108 + 390.67050284 * k - 0.0016118 * T ** 2 - 0.00000227 * T ** 3 + 0.000000011 * T ** 4;
 
 /**
  * Calculates the longitude of the ascending node of the lunar orbit (see AA
@@ -86,8 +89,8 @@ const moonArgumentOfLatitude = (T: number, k: number): number => 160.7108 + 390.
  * @returns {number} Longitude of the ascending node of the lunar orbit at the
  *     given time.
  */
-const moonAscendingNodeLongitude = (T: number, k: number): number => 124.7746 - 1.56375588 * k + 0.0020672 * T ** 2 +
-    0.00000215 * T ** 3;
+const moonAscendingNodeLongitude = (T: number, k: number): number =>
+    124.7746 - 1.56375588 * k + 0.0020672 * T ** 2 + 0.00000215 * T ** 3;
 
 /**
  * Calculates the correction for the eccentricity of the earth's orbit.
@@ -107,6 +110,7 @@ const eccentricityCorrection = (T: number): number => 1 - 0.002516 * T - 0.00000
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
+// biome-ignore format: significant figures
 const commonCorrections = (T: number, k: number): number => {
     const A = [
         0,
@@ -124,10 +128,22 @@ const commonCorrections = (T: number, k: number): number => {
         161.72 + 24.198154 * k,
         239.56 + 25.513099 * k,
         331.55 + 3.592518 * k];
-    return 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) + 0.000164 * sind(A[3]) + 0.000126 * sind(A[4]) +
-        0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) + 0.000060 * sind(A[7]) + 0.000056 * sind(A[8]) +
-        0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) + 0.000040 * sind(A[11]) + 0.000037 * sind(A[12]) +
-        0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
+    return (
+        0.000325 * sind(A[1]) +
+        0.000165 * sind(A[2]) +
+        0.000164 * sind(A[3]) +
+        0.000126 * sind(A[4]) +
+        0.000110 * sind(A[5]) +
+        0.000062 * sind(A[6]) +
+        0.000060 * sind(A[7]) +
+        0.000056 * sind(A[8]) +
+        0.000047 * sind(A[9]) +
+        0.000042 * sind(A[10]) +
+        0.000040 * sind(A[11]) +
+        0.000037 * sind(A[12]) +
+        0.000035 * sind(A[13]) +
+        0.000023 * sind(A[14])
+    );
 };
 
 /**
@@ -143,8 +159,15 @@ const commonCorrections = (T: number, k: number): number => {
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const newMoonFullMoonCorrections = (E: number, M: number, MPrime: number, F: number, Omega: number, phase: number):
-    number => {
+// biome-ignore format: significant figures
+const newMoonFullMoonCorrections = (
+    E: number,
+    M: number,
+    MPrime: number,
+    F: number,
+    Omega: number,
+    phase: number,
+): number => {
     let DeltaJDE =
         -0.00111 * sind(MPrime - 2 * F) -
         0.00057 * sind(MPrime + 2 * F) +
@@ -173,7 +196,8 @@ const newMoonFullMoonCorrections = (E: number, M: number, MPrime: number, F: num
             0.00739 * E * sind(MPrime - M) -
             0.00514 * E * sind(MPrime + M) +
             0.00208 * E * E * sind(2 * M);
-    } else /* istanbul ignore else */ if (phase === 2) {
+    }
+    if (phase === 2) {
         DeltaJDE +=
             -0.40614 * sind(MPrime) +
             0.17302 * E * sind(M) +
@@ -199,8 +223,15 @@ const newMoonFullMoonCorrections = (E: number, M: number, MPrime: number, F: num
  * @returns {number} Correction to the Julian date in ephemeris time for the
  *     moon phase.
  */
-const quarterCorrections = (E: number, M: number, MPrime: number, F: number, Omega: number, phase: MoonPhaseNumber):
-    number => {
+// biome-ignore format: significant figures
+const quarterCorrections = (
+    E: number,
+    M: number,
+    MPrime: number,
+    F: number,
+    Omega: number,
+    phase: MoonPhaseNumber,
+): number => {
     let DeltaJDE =
         -0.62801 * sind(MPrime) +
         0.17172 * E * sind(M) -
@@ -236,7 +267,8 @@ const quarterCorrections = (E: number, M: number, MPrime: number, F: number, Ome
         0.00002 * cosd(2 * F);
     if (phase === 1) {
         DeltaJDE += W;
-    } else /* istanbul ignore else */ if (phase === 3) {
+    }
+    if (phase === 3) {
         DeltaJDE -= W;
     }
     return DeltaJDE;

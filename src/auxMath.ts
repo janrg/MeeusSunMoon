@@ -31,7 +31,7 @@ const cosd = (deg: number): number => Math.cos(deg2rad(deg));
  * @param {number} angle Angle in degrees.
  * @returns {number} Reduced angle in degrees.
  */
-const reduceAngle = (angle: number): number => angle - (360 * Math.floor(angle / 360));
+const reduceAngle = (angle: number): number => angle - 360 * Math.floor(angle / 360);
 
 /**
  * Evaluates a polynomial in the form A + Bx + Cx^2...

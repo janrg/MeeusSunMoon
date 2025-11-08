@@ -56,9 +56,7 @@ const JDToDatetime = (JD: number): DateTime => {
     if (month > 2) {
         year -= 1;
     }
-    return DateTime.fromISO('2000-01-01T12:00:00Z', { zone: 'UTC' })
-        // eslint-disable-next-line sort-keys
-        .set({ year, month, day, hour, minute, second });
+    return DateTime.fromISO('2000-01-01T12:00:00Z', { zone: 'UTC' }).set({ year, month, day, hour, minute, second });
 };
 
 /**
@@ -77,13 +75,13 @@ const JDToT = (JD: number): number => (JD - 2451545) / 36525;
  */
 const datetimeToT = (datetime: DateTime): number => JDToT(datetimeToJD(datetime));
 
-/* eslint-disable complexity */
 /**
  * Calculates the value of ΔT=TT−UT (see
  * http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html).
  * @param {DateTime} datetime Datetime for which ΔT should be calculated.
  * @returns {number} ΔT.
  */
+// biome-ignore format: significant figures
 const DeltaT = (datetime: DateTime): number => {
     let y = datetime.year;
     y += (datetime.month - 0.5) / 12;
@@ -109,8 +107,10 @@ const DeltaT = (datetime: DateTime): number => {
             return polynomial(t, [8.83, 0.1603, -0.0059285, 0.00013336, -1 / 1174000]);
         case y < 1860:
             t = y - 1800;
-            return polynomial(t,
-                [13.72, -0.332447, 0.0068612, 0.0041116, -0.00037436, 0.0000121272, -0.0000001699, 0.000000000875]);
+            return polynomial(
+                t,
+                [13.72, -0.332447, 0.0068612, 0.0041116, -0.00037436, 0.0000121272, -0.0000001699, 0.000000000875],
+            );
         case y < 1900:
             t = y - 1860;
             return polynomial(t, [7.62, 0.5737, -0.251754, 0.01680668, -0.0004473624, 1 / 233174]);
@@ -139,7 +139,6 @@ const DeltaT = (datetime: DateTime): number => {
             return -20 + 32 * u ** 2;
     }
 };
-/* eslint-enable complexity */
 
 /**
  * Calculates an approximate value for k (the fractional number of new moons
@@ -148,8 +147,7 @@ const DeltaT = (datetime: DateTime): number => {
  * @returns {number} k.
  */
 const approxK = (datetime: DateTime): number => {
-    const year = datetime.year + (datetime.month) / 12 +
-        datetime.day / 365.25;
+    const year = datetime.year + datetime.month / 12 + datetime.day / 365.25;
     return (year - 2000) * 12.3685;
 };
 

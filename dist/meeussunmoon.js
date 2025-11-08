@@ -8,29 +8,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('luxon')) :
     typeof define === 'function' && define.amd ? define(['exports', 'luxon'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.MeeusSunMoon = {}, global.luxon));
-}(this, (function (exports, luxon) { 'use strict';
-
-    function _interopNamespace(e) {
-        if (e && e.__esModule) return e;
-        var n = Object.create(null);
-        if (e) {
-            Object.keys(e).forEach(function (k) {
-                if (k !== 'default') {
-                    var d = Object.getOwnPropertyDescriptor(e, k);
-                    Object.defineProperty(n, k, d.get ? d : {
-                        enumerable: true,
-                        get: function () {
-                            return e[k];
-                        }
-                    });
-                }
-            });
-        }
-        n['default'] = e;
-        return Object.freeze(n);
-    }
-
-    var luxon__namespace = /*#__PURE__*/_interopNamespace(luxon);
+})(this, (function (exports, luxon) { 'use strict';
 
     /**
      * Converts angles in degrees to radians.
@@ -61,7 +39,7 @@
      * @param {number} angle Angle in degrees.
      * @returns {number} Reduced angle in degrees.
      */
-    const reduceAngle = (angle) => angle - (360 * Math.floor(angle / 360));
+    const reduceAngle = (angle) => angle - 360 * Math.floor(angle / 360);
     /**
      * Evaluates a polynomial in the form A + Bx + Cx^2...
      * @param {number} variable Value of x in the polynomial.
@@ -156,9 +134,7 @@
         if (month > 2) {
             year -= 1;
         }
-        return luxon.DateTime.fromISO('2000-01-01T12:00:00Z', { zone: 'UTC' })
-            // eslint-disable-next-line sort-keys
-            .set({ year, month, day, hour, minute, second });
+        return luxon.DateTime.fromISO('2000-01-01T12:00:00Z', { zone: 'UTC' }).set({ year, month, day, hour, minute, second });
     };
     /**
      * Converts a Julian date to the number of Julian centuries since
@@ -174,13 +150,13 @@
      * @returns {number} T.
      */
     const datetimeToT = (datetime) => JDToT(datetimeToJD(datetime));
-    /* eslint-disable complexity */
     /**
      * Calculates the value of ΔT=TT−UT (see
      * http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html).
      * @param {DateTime} datetime Datetime for which ΔT should be calculated.
      * @returns {number} ΔT.
      */
+    // biome-ignore format: significant figures
     const DeltaT = (datetime) => {
         let y = datetime.year;
         y += (datetime.month - 0.5) / 12;
@@ -191,7 +167,7 @@
                 throw new RangeError('DeltaT can only be calculated between 1999 BCE and 3000 CE');
             case y < -500:
                 u = (y - 1820) / 100;
-                return -20 + 32 * Math.pow(u, 2);
+                return -20 + 32 * u ** 2;
             case y < 500:
                 u = y / 100;
                 return polynomial(u, [10583.6, -1014.41, 33.78311, -5.952053, -0.1798452, 0.022174192, 0.0090316521]);
@@ -229,13 +205,12 @@
                 t = y - 2000;
                 return polynomial(t, [62.92, 0.32217, 0.005589]);
             case y < 2150:
-                return -20 + 32 * Math.pow(((y - 1820) / 100), 2) - 0.5628 * (2150 - y);
+                return -20 + 32 * ((y - 1820) / 100) ** 2 - 0.5628 * (2150 - y);
             default:
                 u = (y - 1820) / 100;
-                return -20 + 32 * Math.pow(u, 2);
+                return -20 + 32 * u ** 2;
         }
     };
-    /* eslint-enable complexity */
     /**
      * Calculates an approximate value for k (the fractional number of new moons
      * since 2000-01-06).
@@ -243,8 +218,7 @@
      * @returns {number} k.
      */
     const approxK = (datetime) => {
-        const year = datetime.year + (datetime.month) / 12 +
-            datetime.day / 365.25;
+        const year = datetime.year + datetime.month / 12 + datetime.day / 365.25;
         return (year - 2000) * 12.3685;
     };
     /**
@@ -253,6 +227,246 @@
      * @returns {number} T Fractional num. of centuries since 2000-01-01:12:00:00Z.
      */
     const kToT = (k) => k / 1236.85;
+
+    /**
+     * Calculates the Julian date in ephemeris time of the moon near the date
+     * corresponding to k (see AA p350ff).
+     * @param {number} k The approximate fractional number of new moons since
+     *     2000-01-06.
+     * @param {number} phase 0 -> new moon, 1 -> first quarter,
+     *                       2 -> full moon, 3 -> last quarter.
+     * @returns {number} Julian date in ephemeris time of the moon of given phase.
+     */
+    const truePhase = (k, phase) => {
+        k += phase / 4;
+        const T = kToT(k);
+        const E = eccentricityCorrection(T);
+        const JDE = meanPhase(T, k);
+        const M = sunMeanAnomaly$2(T, k);
+        const MPrime = moonMeanAnomaly$2(T, k);
+        const F = moonArgumentOfLatitude$2(T, k);
+        const Omega = moonAscendingNodeLongitude$2(T, k);
+        let DeltaJDE = 0;
+        if (phase === 0 || phase === 2) {
+            DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
+        }
+        if (phase === 1 || phase === 3) {
+            DeltaJDE += quarterCorrections(E, M, MPrime, F, Omega, phase);
+        }
+        DeltaJDE += commonCorrections(T, k);
+        return JDE + DeltaJDE;
+    };
+    /**
+     * Calculates the mean phase of the moon as Julian date in ephemeris time (see
+     * AA p349 Eq49.1).
+     * @param {number} T Fractional number of Julian centuries since
+     *     2000-01-01T12:00:00Z.
+     * @param {number} k The approximate fractional number of new moons since
+     *     2000-01-06.
+     * @returns {number} Julian date in ephemeris time of the moon of given mean
+     *     phase.
+     */
+    // biome-ignore format: significant figures
+    const meanPhase = (T, k) => 2451550.09766 + 29.530588861 * k + 0.00015437 * T ** 2 - 0.000000150 * T ** 3 + 0.00000000073 * T ** 4;
+    /**
+     * Calculates the mean anomaly of the sun (see AA p350 Eq49.4).
+     * @param {number} T Fractional number of Julian centuries since
+     *     2000-01-01T12:00:00Z.
+     * @param {number} k The approximate fractional number of new moons since
+     *     2000-01-06.
+     * @returns {number} Mean anomaly of the sun at the given time.
+     */
+    // biome-ignore format: significant figures
+    const sunMeanAnomaly$2 = (T, k) => 2.5534 + 29.10535670 * k - 0.0000014 * T ** 2 - 0.00000011 * T ** 3;
+    /**
+     * Calculates the mean anomaly of the moon (see AA p350 Eq49.5).
+     * @param {number} T Fractional number of Julian centuries since
+     *     2000-01-01T12:00:00Z.
+     * @param {number} k The approximate fractional number of new moons since
+     *     2000-01-06.
+     * @returns {number} Mean anomaly of the moon at the given time.
+     */
+    const moonMeanAnomaly$2 = (T, k) => 201.5643 + 385.81693528 * k + 0.0107582 * T ** 2 + 0.00001238 * T ** 3 - 0.000000058 * T ** 4;
+    /**
+     * Calculates the argument of latitude of the moon (see AA p350 Eq49.6).
+     * @param {number} T Fractional number of Julian centuries since
+     *     2000-01-01T12:00:00Z.
+     * @param {number} k The approximate fractional number of new moons since
+     *     2000-01-06.
+     * @returns {number} Argument of latitude of the moon at the given time.
+     */
+    const moonArgumentOfLatitude$2 = (T, k) => 160.7108 + 390.67050284 * k - 0.0016118 * T ** 2 - 0.00000227 * T ** 3 + 0.000000011 * T ** 4;
+    /**
+     * Calculates the longitude of the ascending node of the lunar orbit (see AA
+     * p350 Eq49.7).
+     * @param {number} T Fractional number of Julian centuries since
+     *     2000-01-01T12:00:00Z.
+     * @param {number} k The approximate fractional number of new moons since
+     *     2000-01-06.
+     * @returns {number} Longitude of the ascending node of the lunar orbit at the
+     *     given time.
+     */
+    const moonAscendingNodeLongitude$2 = (T, k) => 124.7746 - 1.56375588 * k + 0.0020672 * T ** 2 + 0.00000215 * T ** 3;
+    /**
+     * Calculates the correction for the eccentricity of the earth's orbit.
+     * @param {number} T Fractional number of Julian centuries since
+     *     2000-01-01T12:00:00Z.
+     * @returns {number} Eccentricity correction.
+     */
+    const eccentricityCorrection = (T) => 1 - 0.002516 * T - 0.0000074 * T ** 2;
+    /**
+     * Calculates the corrections to the planetary arguments for the moon phases
+     * that are common to all phases (see AA p352).
+     * @param {number} T Fractional number of Julian centuries since
+     *     2000-01-01T12:00:00Z.
+     * @param {number} k The approximate fractional number of new moons since
+     *     2000-01-06.
+     * @returns {number} Correction to the Julian date in ephemeris time for the
+     *     moon phase.
+     */
+    // biome-ignore format: significant figures
+    const commonCorrections = (T, k) => {
+        const A = [
+            0,
+            299.77 + 0.107408 * k - 0.009173 * T ** 2,
+            251.88 + 0.016321 * k,
+            251.83 + 26.651886 * k,
+            349.42 + 36.412478 * k,
+            84.66 + 18.206239 * k,
+            141.74 + 53.303771 * k,
+            207.14 + 2.453732 * k,
+            154.84 + 7.306860 * k,
+            34.52 + 27.261239 * k,
+            207.19 + 0.121824 * k,
+            291.34 + 1.844379 * k,
+            161.72 + 24.198154 * k,
+            239.56 + 25.513099 * k,
+            331.55 + 3.592518 * k
+        ];
+        return (0.000325 * sind(A[1]) +
+            0.000165 * sind(A[2]) +
+            0.000164 * sind(A[3]) +
+            0.000126 * sind(A[4]) +
+            0.000110 * sind(A[5]) +
+            0.000062 * sind(A[6]) +
+            0.000060 * sind(A[7]) +
+            0.000056 * sind(A[8]) +
+            0.000047 * sind(A[9]) +
+            0.000042 * sind(A[10]) +
+            0.000040 * sind(A[11]) +
+            0.000037 * sind(A[12]) +
+            0.000035 * sind(A[13]) +
+            0.000023 * sind(A[14]));
+    };
+    /**
+     * Calculates the corrections to the planetary arguments for the moon phases
+     * for full and new moons (see AA p351).
+     * @param {number} E Correction for the eccentricity of the earth's orbit.
+     * @param {number} M Mean anomaly of the sun.
+     * @param {number} MPrime Mean anomaly of the moon.
+     * @param {number} F Argument of latitude of the moon.
+     * @param {number} Omega Longitude of the ascending node of the lunar orbit.
+     * @param {number} phase 0 -> new moon, 1 -> first quarter,
+     *                    2 -> full moon, 3 -> last quarter.
+     * @returns {number} Correction to the Julian date in ephemeris time for the
+     *     moon phase.
+     */
+    // biome-ignore format: significant figures
+    const newMoonFullMoonCorrections = (E, M, MPrime, F, Omega, phase) => {
+        let DeltaJDE = -0.00111 * sind(MPrime - 2 * F) -
+            0.00057 * sind(MPrime + 2 * F) +
+            0.00056 * E * sind(2 * MPrime + M) -
+            0.00042 * sind(3 * MPrime) +
+            0.00042 * E * sind(M + 2 * F) +
+            0.00038 * E * sind(M - 2 * F) -
+            0.00024 * E * sind(2 * MPrime - M) -
+            0.00017 * sind(Omega) -
+            0.00007 * sind(MPrime + 2 * M) +
+            0.00004 * sind(2 * MPrime - 2 * F) +
+            0.00004 * sind(3 * M) +
+            0.00003 * sind(MPrime + M - 2 * F) +
+            0.00003 * sind(2 * MPrime + 2 * F) -
+            0.00003 * sind(MPrime + M + 2 * F) +
+            0.00003 * sind(MPrime - M + 2 * F) -
+            0.00002 * sind(MPrime - M - 2 * F) -
+            0.00002 * sind(3 * MPrime + M) +
+            0.00002 * sind(4 * MPrime);
+        if (phase === 0) {
+            DeltaJDE +=
+                -0.40720 * sind(MPrime) +
+                    0.17241 * E * sind(M) +
+                    0.01608 * sind(2 * MPrime) +
+                    0.01039 * sind(2 * F) +
+                    0.00739 * E * sind(MPrime - M) -
+                    0.00514 * E * sind(MPrime + M) +
+                    0.00208 * E * E * sind(2 * M);
+        }
+        if (phase === 2) {
+            DeltaJDE +=
+                -0.40614 * sind(MPrime) +
+                    0.17302 * E * sind(M) +
+                    0.01614 * sind(2 * MPrime) +
+                    0.01043 * sind(2 * F) +
+                    0.00734 * E * sind(MPrime - M) -
+                    0.00515 * E * sind(MPrime + M) +
+                    0.00209 * E * E * sind(2 * M);
+        }
+        return DeltaJDE;
+    };
+    /**
+     * Calculates the corrections to the planetary arguments for the moon phases
+     * for first and last quarters (see AA p352).
+     * @param {number} E Correction for the eccentricity of the earth's orbit.
+     * @param {number} M Mean anomaly of the sun.
+     * @param {number} MPrime Mean anomaly of the moon.
+     * @param {number} F Argument of latitude of the moon.
+     * @param {number} Omega Longitude of the ascending node of the lunar orbit.
+     * @param {number} phase 0 -> new moon, 1 -> first quarter,
+     *                    2 -> full moon, 3 -> last quarter.
+     * @returns {number} Correction to the Julian date in ephemeris time for the
+     *     moon phase.
+     */
+    // biome-ignore format: significant figures
+    const quarterCorrections = (E, M, MPrime, F, Omega, phase) => {
+        let DeltaJDE = -0.62801 * sind(MPrime) +
+            0.17172 * E * sind(M) -
+            0.01183 * E * sind(MPrime + M) +
+            0.00862 * sind(2 * MPrime) +
+            0.00804 * sind(2 * F) +
+            0.00454 * E * sind(MPrime - M) +
+            0.00204 * E * E * sind(2 * M) -
+            0.00180 * sind(MPrime - 2 * F) -
+            0.00070 * sind(MPrime + 2 * F) -
+            0.00040 * sind(3 * MPrime) -
+            0.00034 * E * sind(2 * MPrime - M) +
+            0.00032 * E * sind(M + 2 * F) +
+            0.00032 * E * sind(M - 2 * F) -
+            0.00028 * E * E * sind(MPrime + 2 * M) +
+            0.00027 * E * sind(2 * MPrime + M) -
+            0.00017 * sind(Omega) -
+            0.00005 * sind(MPrime - M - 2 * F) +
+            0.00004 * sind(2 * MPrime + 2 * F) -
+            0.00004 * sind(MPrime + M + 2 * F) +
+            0.00004 * sind(MPrime - 2 * M) +
+            0.00003 * sind(MPrime + M - 2 * F) +
+            0.00003 * sind(3 * M) +
+            0.00002 * sind(2 * MPrime - 2 * F) +
+            0.00002 * sind(MPrime - M + 2 * F) -
+            0.00002 * sind(3 * MPrime + M);
+        const W = 0.00306 -
+            0.00038 * E * cosd(M) +
+            0.00026 * cosd(MPrime) -
+            0.00002 * cosd(MPrime - M) +
+            0.00002 * cosd(MPrime + M) +
+            0.00002 * cosd(2 * F);
+        if (phase === 1) {
+            DeltaJDE += W;
+        }
+        if (phase === 3) {
+            DeltaJDE -= W;
+        }
+        return DeltaJDE;
+    };
 
     let roundToNearestMinute = false;
     let returnTimeForNoEventCase = false;
@@ -273,25 +487,38 @@
     };
 
     /** See AA p144 */
-    const sunMeanAnomaly$2 = [357.52772, 35999.050340, -0.0001603, -1 / 300000];
+    // biome-ignore format: significant figures
+    const sunMeanAnomaly$1 = [357.52772, 35999.050340, -0.0001603, -1 / 300000];
     /** See AA p163 Eq 25.2 */
     const sunMeanLongitude$1 = [280.46646, 36000.76983, 0.0003032];
     /** See AA p147 Eq22.3 */
-    const meanObliquityOfEcliptic$1 = [84381.448 / 3600, -4680.93 / 3600, -1.55 / 3600, 1999.25 / 3600, -51.38 / 3600, -249.67 / 3600, -39.05 / 3600,
-        7.12 / 3600, 27.87 / 3600, 5.79 / 3600, 2.45 / 3600];
+    const meanObliquityOfEcliptic$1 = [
+        84381.448 / 3600,
+        -4680.93 / 3600,
+        -1.55 / 3600,
+        1999.25 / 3600,
+        -51.38 / 3600,
+        -249.67 / 3600,
+        -39.05 / 3600,
+        7.12 / 3600,
+        27.87 / 3600,
+        5.79 / 3600,
+        2.45 / 3600,
+    ];
     /** See AA p144 */
-    const moonArgumentOfLatitude$2 = [93.27191, 483202.017538, -0.0036825, 1 / 327270];
+    const moonArgumentOfLatitude$1 = [93.27191, 483202.017538, -0.0036825, 1 / 327270];
     /** See AA p144 */
-    const moonAscendingNodeLongitude$2 = [125.04452, -1934.136261, 0.0020708, 1 / 450000];
+    const moonAscendingNodeLongitude$1 = [125.04452, -1934.136261, 0.0020708, 1 / 450000];
     /** See AA p144 */
-    const moonMeanAnomaly$2 = [134.96298, 477198.867398, 0.0086972, 1 / 56250];
+    const moonMeanAnomaly$1 = [134.96298, 477198.867398, 0.0086972, 1 / 56250];
     /** See AA p144 */
+    // biome-ignore format: significant figures
     const moonMeanElongation$1 = [297.85036, 445267.111480, -0.0019142, 1 / 189474];
-    /* eslint-disable no-multi-spaces, array-bracket-spacing */
     /**
      * Nutations in longitude and obliquity
      * See AA p145f
      */
+    // biome-ignore format: Column alignment
     const nutations = [
         [0, 0, 0, 0, 1, -171996, -174.2, 92025, 8.9],
         [-2, 0, 0, 2, 2, -13187, -1.6, 5736, -3.1],
@@ -367,13 +594,14 @@
      */
     const sunTransit = (datetime, L) => {
         const timezone = datetime.zone;
-        let transit = datetime.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+        let transit = datetime
+            .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
             .setZone('UTC', { keepLocalTime: true });
         const deltaT = DeltaT(transit);
         const T = datetimeToT(transit);
         const Theta0 = apparentSiderealTimeGreenwich(T);
         // Want 0h TD for this, not UT
-        const TD = T - (deltaT / (3600 * 24 * 36525));
+        const TD = T - deltaT / (3600 * 24 * 36525);
         const alpha = sunApparentRightAscension(TD);
         // Sign flip for longitude from AA as we take East as positive
         let m = (alpha - L - Theta0) / 360;
@@ -399,16 +627,16 @@
      *     astronomical dawn/dusk.
      * @returns {DateTime} Sunrise or sunset time.
      */
-    // eslint-disable-next-line complexity,require-jsdoc
     const sunRiseSet = (datetime, phi, L, flag, offset = 50 / 60) => {
         const timezone = datetime.zone;
-        let suntime = datetime.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+        let suntime = datetime
+            .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
             .setZone('UTC', { keepLocalTime: true });
         const deltaT = DeltaT(suntime);
         const T = datetimeToT(suntime);
         const Theta0 = apparentSiderealTimeGreenwich(T);
         // Want 0h TD for this, not UT
-        const TD = T - (deltaT / (3600 * 24 * 36525));
+        const TD = T - deltaT / (3600 * 24 * 36525);
         const alpha = sunApparentRightAscension(TD);
         const delta = sunApparentDeclination(TD);
         const H0 = approxLocalHourAngle(phi, delta, offset);
@@ -425,7 +653,7 @@
         let counter = 0;
         let DeltaM = 1;
         // Repeat if correction is larger than ~9s
-        while ((Math.abs(DeltaM) > 0.0001) && (counter < 3)) {
+        while (Math.abs(DeltaM) > 0.0001 && counter < 3) {
             DeltaM = sunRiseSetCorrection(T, Theta0, deltaT, phi, L, m, offset);
             m += DeltaM;
             counter++;
@@ -450,7 +678,7 @@
      * @param {string|undefined} errorCode The error code in case no event was found
      * @param {number} hour Hour to which the returned datetime should be set.
      * @param {number} minute Minute to which the returned datetime should be set.
-     * @returns {(DateTime|string)} Time given by parameter 'hour' (+ correction for
+     * @returns {(DateTimeWithErrorCode|string)} Time given by parameter 'hour' (+ correction for
      *     DST if applicable) or a string indicating why there was no event ('SUN_HIGH'
      *     or 'SUN_LOW')
      */
@@ -472,9 +700,7 @@
      * @returns {number} Approximate local hour angle.
      */
     const approxLocalHourAngle = (phi, delta, offset) => {
-        const cosH0 = (sind(-offset) -
-            sind(phi) * sind(delta)) /
-            (cosd(phi) * cosd(delta));
+        const cosH0 = (sind(-offset) - sind(phi) * sind(delta)) / (cosd(phi) * cosd(delta));
         if (cosH0 < -1) {
             throw noEventCodes.SUN_HIGH;
         }
@@ -489,12 +715,14 @@
      * @param {number} utcOffset Offset in minutes from UTC.
      * @returns {number} m Normalized m.
      */
+    // biome-ignore format: coverage comment
     const normalizeM = (m, utcOffset) => {
         const localM = m + utcOffset / 1440;
         if (localM < 0) {
             return m + 1;
         }
-        else /* istanbul ignore next */ if (localM > 1) {
+        /* istanbul ignore next */
+        if (localM > 1) {
             return m - 1;
         }
         return m;
@@ -570,9 +798,9 @@
      * @returns {number} Interpolated right ascension.
      */
     const interpolatedRa = (T, n) => {
-        const alpha1 = sunApparentRightAscension(T - (1 / 36525));
+        const alpha1 = sunApparentRightAscension(T - 1 / 36525);
         const alpha2 = sunApparentRightAscension(T);
-        const alpha3 = sunApparentRightAscension(T + (1 / 36525));
+        const alpha3 = sunApparentRightAscension(T + 1 / 36525);
         const alpha = interpolateFromThree(alpha1, alpha2, alpha3, n, true);
         return reduceAngle(alpha);
     };
@@ -584,9 +812,9 @@
      * @returns {number} Interpolated declination.
      */
     const interpolatedDec = (T, n) => {
-        const delta1 = sunApparentDeclination(T - (1 / 36525));
+        const delta1 = sunApparentDeclination(T - 1 / 36525);
         const delta2 = sunApparentDeclination(T);
-        const delta3 = sunApparentDeclination(T + (1 / 36525));
+        const delta3 = sunApparentDeclination(T + 1 / 36525);
         const delta = interpolateFromThree(delta1, delta2, delta3, n);
         return reduceAngle(delta);
     };
@@ -597,7 +825,7 @@
      * @returns {number} Apparent right ascension of the sun.
      */
     const sunApparentRightAscension = (T) => {
-        const Omega = moonAscendingNodeLongitude$1(T);
+        const Omega = moonAscendingNodeLongitude(T);
         const epsilon = trueObliquityOfEcliptic(T) + 0.00256 * cosd(Omega);
         const lambda = sunApparentLongitude(T);
         const alpha = rad2deg(Math.atan2(cosd(epsilon) * sind(lambda), cosd(lambda)));
@@ -610,7 +838,7 @@
      * @returns {number} Apparent declination of the sun.
      */
     const sunApparentDeclination = (T) => {
-        const Omega = moonAscendingNodeLongitude$1(T);
+        const Omega = moonAscendingNodeLongitude(T);
         const epsilon = trueObliquityOfEcliptic(T) + 0.00256 * cosd(Omega);
         const lambda = sunApparentLongitude(T);
         return rad2deg(Math.asin(sind(epsilon) * sind(lambda)));
@@ -636,7 +864,7 @@
      */
     const meanSiderealTimeGreenwich = (T) => {
         const JD2000 = T * 36525;
-        return 280.46061837 + 360.98564736629 * JD2000 + 0.000387933 * Math.pow(T, 2) - Math.pow(T, 3) / 38710000;
+        return 280.46061837 + 360.98564736629 * JD2000 + 0.000387933 * T ** 2 - T ** 3 / 38710000;
     };
     /**
      * Calculates the true obliquity of the ecliptic (see AA p147).
@@ -667,7 +895,7 @@
      */
     const sunApparentLongitude = (T) => {
         const Sol = sunTrueLongitude(T);
-        const Omega = moonAscendingNodeLongitude$1(T);
+        const Omega = moonAscendingNodeLongitude(T);
         return Sol - 0.00569 - 0.00478 * sind(Omega);
     };
     /**
@@ -687,10 +915,12 @@
      *     2000-01-01T12:00:00Z.
      * @returns {number} Equation of center of the sun.
      */
+    // biome-ignore format: significant figures
     const sunEquationOfCenter = (T) => {
-        const M = sunMeanAnomaly$1(T);
-        return (1.914602 - 0.004817 * T - 0.000014 * Math.pow(T, 2)) * sind(M) +
-            (0.019993 - 0.000101 * T) * sind(2 * M) + 0.000290 * sind(3 * M);
+        const M = sunMeanAnomaly(T);
+        return ((1.914602 - 0.004817 * T - 0.000014 * T ** 2) * sind(M) +
+            (0.019993 - 0.000101 * T) * sind(2 * M) +
+            0.000290 * sind(3 * M));
     };
     /**
      * Calculates the nutation in longitude of the sun (see AA p144ff).
@@ -700,15 +930,19 @@
      */
     const nutationInLongitude = (T) => {
         const D = moonMeanElongation(T);
-        const M = sunMeanAnomaly$1(T);
-        const MPrime = moonMeanAnomaly$1(T);
-        const F = moonArgumentOfLatitude$1(T);
-        const Omega = moonAscendingNodeLongitude$1(T);
+        const M = sunMeanAnomaly(T);
+        const MPrime = moonMeanAnomaly(T);
+        const F = moonArgumentOfLatitude(T);
+        const Omega = moonAscendingNodeLongitude(T);
         let DeltaPsi = 0;
         let sineArg;
         for (let i = 0; i < 63; i++) {
-            sineArg = nutations[i][0] * D + nutations[i][1] * M + nutations[i][2] * MPrime +
-                nutations[i][3] * F + nutations[i][4] * Omega;
+            sineArg =
+                nutations[i][0] * D +
+                    nutations[i][1] * M +
+                    nutations[i][2] * MPrime +
+                    nutations[i][3] * F +
+                    nutations[i][4] * Omega;
             DeltaPsi += (nutations[i][5] + nutations[i][6] * T) * sind(sineArg);
         }
         return DeltaPsi / 36000000;
@@ -721,15 +955,19 @@
      */
     const nutationInObliquity = (T) => {
         const D = moonMeanElongation(T);
-        const M = sunMeanAnomaly$1(T);
-        const MPrime = moonMeanAnomaly$1(T);
-        const F = moonArgumentOfLatitude$1(T);
-        const Omega = moonAscendingNodeLongitude$1(T);
+        const M = sunMeanAnomaly(T);
+        const MPrime = moonMeanAnomaly(T);
+        const F = moonArgumentOfLatitude(T);
+        const Omega = moonAscendingNodeLongitude(T);
         let DeltaEpsilon = 0;
         let cosArg;
         for (let i = 0; i < 63; i++) {
-            cosArg = nutations[i][0] * D + nutations[i][1] * M + nutations[i][2] * MPrime +
-                nutations[i][3] * F + nutations[i][4] * Omega;
+            cosArg =
+                nutations[i][0] * D +
+                    nutations[i][1] * M +
+                    nutations[i][2] * MPrime +
+                    nutations[i][3] * F +
+                    nutations[i][4] * Omega;
             DeltaEpsilon += (nutations[i][7] + nutations[i][8] * T) * cosd(cosArg);
         }
         return DeltaEpsilon / 36000000;
@@ -740,8 +978,8 @@
      *     2000-01-01T12:00:00Z.
      * @returns {number} Argument of latitude of the moon.
      */
-    const moonArgumentOfLatitude$1 = (T) => {
-        const F = polynomial(T, moonArgumentOfLatitude$2);
+    const moonArgumentOfLatitude = (T) => {
+        const F = polynomial(T, moonArgumentOfLatitude$1);
         return reduceAngle(F);
     };
     /**
@@ -751,8 +989,8 @@
      *     2000-01-01T12:00:00Z.
      * @returns {number} Longitude of the asc. node of the moon's mean orbit.
      */
-    const moonAscendingNodeLongitude$1 = (T) => {
-        const Omega = polynomial(T, moonAscendingNodeLongitude$2);
+    const moonAscendingNodeLongitude = (T) => {
+        const Omega = polynomial(T, moonAscendingNodeLongitude$1);
         return reduceAngle(Omega);
     };
     /**
@@ -761,8 +999,8 @@
      *     2000-01-01T12:00:00Z.
      * @returns {number} Mean anomaly of the moon.
      */
-    const moonMeanAnomaly$1 = (T) => {
-        const MPrime = polynomial(T, moonMeanAnomaly$2);
+    const moonMeanAnomaly = (T) => {
+        const MPrime = polynomial(T, moonMeanAnomaly$1);
         return reduceAngle(MPrime);
     };
     /**
@@ -781,8 +1019,8 @@
      *     2000-01-01T12:00:00Z.
      * @returns {number} Mean anomaly of the sun.
      */
-    const sunMeanAnomaly$1 = (T) => {
-        const M = polynomial(T, sunMeanAnomaly$2);
+    const sunMeanAnomaly = (T) => {
+        const M = polynomial(T, sunMeanAnomaly$1);
         return reduceAngle(M);
     };
     /**
@@ -803,239 +1041,9 @@
     };
 
     /**
-     * Calculates the Julian date in ephemeris time of the moon near the date
-     * corresponding to k (see AA p350ff).
-     * @param {number} k The approximate fractional number of new moons since
-     *     2000-01-06.
-     * @param {number} phase 0 -> new moon, 1 -> first quarter,
-     *                       2 -> full moon, 3 -> last quarter.
-     * @returns {number} Julian date in ephemeris time of the moon of given phase.
-     */
-    const truePhase = (k, phase) => {
-        k += phase / 4;
-        const T = kToT(k);
-        const E = eccentricityCorrection(T);
-        const JDE = meanPhase(T, k);
-        const M = sunMeanAnomaly(T, k);
-        const MPrime = moonMeanAnomaly(T, k);
-        const F = moonArgumentOfLatitude(T, k);
-        const Omega = moonAscendingNodeLongitude(T, k);
-        let DeltaJDE = 0;
-        if (phase === 0 || phase === 2) {
-            DeltaJDE += newMoonFullMoonCorrections(E, M, MPrime, F, Omega, phase);
-        }
-        else /* istanbul ignore else */ if (phase === 1 || phase === 3) {
-            DeltaJDE += quarterCorrections(E, M, MPrime, F, Omega, phase);
-        }
-        DeltaJDE += commonCorrections(T, k);
-        return JDE + DeltaJDE;
-    };
-    /**
-     * Calculates the mean phase of the moon as Julian date in ephemeris time (see
-     * AA p349 Eq49.1).
-     * @param {number} T Fractional number of Julian centuries since
-     *     2000-01-01T12:00:00Z.
-     * @param {number} k The approximate fractional number of new moons since
-     *     2000-01-06.
-     * @returns {number} Julian date in ephemeris time of the moon of given mean
-     *     phase.
-     */
-    const meanPhase = (T, k) => 2451550.09766 + 29.530588861 * k + 0.00015437 * Math.pow(T, 2) -
-        0.000000150 * Math.pow(T, 3) + 0.00000000073 * Math.pow(T, 4);
-    /**
-     * Calculates the mean anomaly of the sun (see AA p350 Eq49.4).
-     * @param {number} T Fractional number of Julian centuries since
-     *     2000-01-01T12:00:00Z.
-     * @param {number} k The approximate fractional number of new moons since
-     *     2000-01-06.
-     * @returns {number} Mean anomaly of the sun at the given time.
-     */
-    const sunMeanAnomaly = (T, k) => 2.5534 + 29.10535670 * k - 0.0000014 * Math.pow(T, 2) -
-        0.00000011 * Math.pow(T, 3);
-    /**
-     * Calculates the mean anomaly of the moon (see AA p350 Eq49.5).
-     * @param {number} T Fractional number of Julian centuries since
-     *     2000-01-01T12:00:00Z.
-     * @param {number} k The approximate fractional number of new moons since
-     *     2000-01-06.
-     * @returns {number} Mean anomaly of the moon at the given time.
-     */
-    const moonMeanAnomaly = (T, k) => 201.5643 + 385.81693528 * k + 0.0107582 * Math.pow(T, 2) +
-        0.00001238 * Math.pow(T, 3) - 0.000000058 * Math.pow(T, 4);
-    /**
-     * Calculates the argument of latitude of the moon (see AA p350 Eq49.6).
-     * @param {number} T Fractional number of Julian centuries since
-     *     2000-01-01T12:00:00Z.
-     * @param {number} k The approximate fractional number of new moons since
-     *     2000-01-06.
-     * @returns {number} Argument of latitude of the moon at the given time.
-     */
-    const moonArgumentOfLatitude = (T, k) => 160.7108 + 390.67050284 * k - 0.0016118 * Math.pow(T, 2) -
-        0.00000227 * Math.pow(T, 3) + 0.000000011 * Math.pow(T, 4);
-    /**
-     * Calculates the longitude of the ascending node of the lunar orbit (see AA
-     * p350 Eq49.7).
-     * @param {number} T Fractional number of Julian centuries since
-     *     2000-01-01T12:00:00Z.
-     * @param {number} k The approximate fractional number of new moons since
-     *     2000-01-06.
-     * @returns {number} Longitude of the ascending node of the lunar orbit at the
-     *     given time.
-     */
-    const moonAscendingNodeLongitude = (T, k) => 124.7746 - 1.56375588 * k + 0.0020672 * Math.pow(T, 2) +
-        0.00000215 * Math.pow(T, 3);
-    /**
-     * Calculates the correction for the eccentricity of the earth's orbit.
-     * @param {number} T Fractional number of Julian centuries since
-     *     2000-01-01T12:00:00Z.
-     * @returns {number} Eccentricity correction.
-     */
-    const eccentricityCorrection = (T) => 1 - 0.002516 * T - 0.0000074 * Math.pow(T, 2);
-    /**
-     * Calculates the corrections to the planetary arguments for the moon phases
-     * that are common to all phases (see AA p352).
-     * @param {number} T Fractional number of Julian centuries since
-     *     2000-01-01T12:00:00Z.
-     * @param {number} k The approximate fractional number of new moons since
-     *     2000-01-06.
-     * @returns {number} Correction to the Julian date in ephemeris time for the
-     *     moon phase.
-     */
-    const commonCorrections = (T, k) => {
-        const A = [
-            0,
-            299.77 + 0.107408 * k - 0.009173 * Math.pow(T, 2),
-            251.88 + 0.016321 * k,
-            251.83 + 26.651886 * k,
-            349.42 + 36.412478 * k,
-            84.66 + 18.206239 * k,
-            141.74 + 53.303771 * k,
-            207.14 + 2.453732 * k,
-            154.84 + 7.306860 * k,
-            34.52 + 27.261239 * k,
-            207.19 + 0.121824 * k,
-            291.34 + 1.844379 * k,
-            161.72 + 24.198154 * k,
-            239.56 + 25.513099 * k,
-            331.55 + 3.592518 * k
-        ];
-        return 0.000325 * sind(A[1]) + 0.000165 * sind(A[2]) + 0.000164 * sind(A[3]) + 0.000126 * sind(A[4]) +
-            0.000110 * sind(A[5]) + 0.000062 * sind(A[6]) + 0.000060 * sind(A[7]) + 0.000056 * sind(A[8]) +
-            0.000047 * sind(A[9]) + 0.000042 * sind(A[10]) + 0.000040 * sind(A[11]) + 0.000037 * sind(A[12]) +
-            0.000035 * sind(A[13]) + 0.000023 * sind(A[14]);
-    };
-    /**
-     * Calculates the corrections to the planetary arguments for the moon phases
-     * for full and new moons (see AA p351).
-     * @param {number} E Correction for the eccentricity of the earth's orbit.
-     * @param {number} M Mean anomaly of the sun.
-     * @param {number} MPrime Mean anomaly of the moon.
-     * @param {number} F Argument of latitude of the moon.
-     * @param {number} Omega Longitude of the ascending node of the lunar orbit.
-     * @param {number} phase 0 -> new moon, 1 -> first quarter,
-     *                    2 -> full moon, 3 -> last quarter.
-     * @returns {number} Correction to the Julian date in ephemeris time for the
-     *     moon phase.
-     */
-    const newMoonFullMoonCorrections = (E, M, MPrime, F, Omega, phase) => {
-        let DeltaJDE = -0.00111 * sind(MPrime - 2 * F) -
-            0.00057 * sind(MPrime + 2 * F) +
-            0.00056 * E * sind(2 * MPrime + M) -
-            0.00042 * sind(3 * MPrime) +
-            0.00042 * E * sind(M + 2 * F) +
-            0.00038 * E * sind(M - 2 * F) -
-            0.00024 * E * sind(2 * MPrime - M) -
-            0.00017 * sind(Omega) -
-            0.00007 * sind(MPrime + 2 * M) +
-            0.00004 * sind(2 * MPrime - 2 * F) +
-            0.00004 * sind(3 * M) +
-            0.00003 * sind(MPrime + M - 2 * F) +
-            0.00003 * sind(2 * MPrime + 2 * F) -
-            0.00003 * sind(MPrime + M + 2 * F) +
-            0.00003 * sind(MPrime - M + 2 * F) -
-            0.00002 * sind(MPrime - M - 2 * F) -
-            0.00002 * sind(3 * MPrime + M) +
-            0.00002 * sind(4 * MPrime);
-        if (phase === 0) {
-            DeltaJDE +=
-                -0.40720 * sind(MPrime) +
-                    0.17241 * E * sind(M) +
-                    0.01608 * sind(2 * MPrime) +
-                    0.01039 * sind(2 * F) +
-                    0.00739 * E * sind(MPrime - M) -
-                    0.00514 * E * sind(MPrime + M) +
-                    0.00208 * E * E * sind(2 * M);
-        }
-        else /* istanbul ignore else */ if (phase === 2) {
-            DeltaJDE +=
-                -0.40614 * sind(MPrime) +
-                    0.17302 * E * sind(M) +
-                    0.01614 * sind(2 * MPrime) +
-                    0.01043 * sind(2 * F) +
-                    0.00734 * E * sind(MPrime - M) -
-                    0.00515 * E * sind(MPrime + M) +
-                    0.00209 * E * E * sind(2 * M);
-        }
-        return DeltaJDE;
-    };
-    /**
-     * Calculates the corrections to the planetary arguments for the moon phases
-     * for first and last quarters (see AA p352).
-     * @param {number} E Correction for the eccentricity of the earth's orbit.
-     * @param {number} M Mean anomaly of the sun.
-     * @param {number} MPrime Mean anomaly of the moon.
-     * @param {number} F Argument of latitude of the moon.
-     * @param {number} Omega Longitude of the ascending node of the lunar orbit.
-     * @param {number} phase 0 -> new moon, 1 -> first quarter,
-     *                    2 -> full moon, 3 -> last quarter.
-     * @returns {number} Correction to the Julian date in ephemeris time for the
-     *     moon phase.
-     */
-    const quarterCorrections = (E, M, MPrime, F, Omega, phase) => {
-        let DeltaJDE = -0.62801 * sind(MPrime) +
-            0.17172 * E * sind(M) -
-            0.01183 * E * sind(MPrime + M) +
-            0.00862 * sind(2 * MPrime) +
-            0.00804 * sind(2 * F) +
-            0.00454 * E * sind(MPrime - M) +
-            0.00204 * E * E * sind(2 * M) -
-            0.00180 * sind(MPrime - 2 * F) -
-            0.00070 * sind(MPrime + 2 * F) -
-            0.00040 * sind(3 * MPrime) -
-            0.00034 * E * sind(2 * MPrime - M) +
-            0.00032 * E * sind(M + 2 * F) +
-            0.00032 * E * sind(M - 2 * F) -
-            0.00028 * E * E * sind(MPrime + 2 * M) +
-            0.00027 * E * sind(2 * MPrime + M) -
-            0.00017 * sind(Omega) -
-            0.00005 * sind(MPrime - M - 2 * F) +
-            0.00004 * sind(2 * MPrime + 2 * F) -
-            0.00004 * sind(MPrime + M + 2 * F) +
-            0.00004 * sind(MPrime - 2 * M) +
-            0.00003 * sind(MPrime + M - 2 * F) +
-            0.00003 * sind(3 * M) +
-            0.00002 * sind(2 * MPrime - 2 * F) +
-            0.00002 * sind(MPrime - M + 2 * F) -
-            0.00002 * sind(3 * MPrime + M);
-        const W = 0.00306 -
-            0.00038 * E * cosd(M) +
-            0.00026 * cosd(MPrime) -
-            0.00002 * cosd(MPrime - M) +
-            0.00002 * cosd(MPrime + M) +
-            0.00002 * cosd(2 * F);
-        if (phase === 1) {
-            DeltaJDE += W;
-        }
-        else /* istanbul ignore else */ if (phase === 3) {
-            DeltaJDE -= W;
-        }
-        return DeltaJDE;
-    };
-
-    /**
-     * Uses the extra information encoded into the DateTime object for dates without
+     * Uses the extra information encoded into the DateTimeWithErrorCode object for dates without
      * a sun event if returnTimeForNoEventCase is true to mark the output string.
-     * @param {DateTime} datetime Input datetime.
+     * @param {DateTimeWithErrorCode} datetime Input datetime.
      * @param {string} formatString Valid DateTime format string.
      * @returns {string} Formatted string with marker appended.
      */
@@ -1054,7 +1062,7 @@
      *     unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of sunrise or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of sunrise or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1073,7 +1081,7 @@
      *     unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of sunset or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of sunset or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1092,7 +1100,7 @@
      *     unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of civil dawn or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of civil dawn or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1111,7 +1119,7 @@
      *     unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of civil dusk or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of civil dusk or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1130,7 +1138,7 @@
      *     lead to unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of nautical dawn or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of nautical dawn or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1149,7 +1157,7 @@
      *     lead to unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of nautical dusk or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of nautical dusk or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1168,7 +1176,7 @@
      *     lead to unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of astronomical dawn or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of astronomical dawn or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1187,7 +1195,7 @@
      *     lead to unexpected behaviour.
      * @param {number} latitude Latitude of target location.
      * @param {number} longitude longitude of target location.
-     * @returns {(DateTime|string)} Time of astronomical dusk or a string indicating that no
+     * @returns {(DateTimeWithErrorCode|string)} Time of astronomical dusk or a string indicating that no
      *     event could be calculated as the sun was too high ('SUN_HIGH') or too low
      *     ('SUN_LOW') during the entire day (unless returnTimeForNoEventCase is true).
      */
@@ -1205,7 +1213,7 @@
      *     always contain a timezone or be in UTC, lone UTC offsets might lead to
      *     unexpected behaviour.
      * @param {number} longitude longitude of target location.
-     * @returns {DateTime} Time of solar noon at the given longitude.
+     * @returns {DateTimeWithErrorCode} Time of solar noon at the given longitude.
      */
     const solarNoon = (datetime, longitude) => sunTransit(datetime, longitude);
     /**
@@ -1218,12 +1226,8 @@
      * @returns {array} Array of DateTime objects for moons of the given phase.
      */
     const yearMoonPhases = (year, phase, timezone = 'UTC') => {
-        const yearBegin = luxon__namespace.DateTime.fromObject(
-        // eslint-disable-next-line sort-keys
-        { year, month: 1, day: 1, hour: 0, minute: 0, second: 0, zone: timezone });
-        const yearEnd = luxon__namespace.DateTime.fromObject(
-        // eslint-disable-next-line sort-keys
-        { year: year + 1, month: 1, day: 1, hour: 0, minute: 0, second: 0, zone: timezone });
+        const yearBegin = luxon.DateTime.fromObject({ year, month: 1, day: 1, hour: 0, minute: 0, second: 0 }, { zone: timezone });
+        const yearEnd = luxon.DateTime.fromObject({ year: year + 1, month: 1, day: 1, hour: 0, minute: 0, second: 0 }, { zone: timezone });
         // this will give us k for the first new moon of the year or earlier
         let k = Math.floor(approxK(yearBegin)) - 1;
         // taking 15 events will make sure we catch every event in the year
@@ -1274,6 +1278,4 @@
     exports.yearAllMoonPhases = yearAllMoonPhases;
     exports.yearMoonPhases = yearMoonPhases;
 
-    Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+}));
